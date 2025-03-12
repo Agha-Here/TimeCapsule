@@ -6,11 +6,18 @@
   <title>Create Your Capsule</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'capsule/styles.css' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" type="image/webp" href="{% static 'capsule/icon1.png' %}">
 </head>
 <body>
-  <div class="container">
+  <div class="split-container">
     <canvas id="bg"></canvas>
-    <div class="content">
+    
+    <!-- Left Section - Form -->
+    <div class="section left-section">
       <h1 class="title">Create Your Capsule</h1>
       <p class="subtitle">Seal your memories for the future</p>
       {% if success %}
@@ -25,8 +32,8 @@
           <textarea id="msg" name="msg" placeholder="Write something to your future self..." rows="4"></textarea>
         </div>
         <div class="form-group">
-          <label for="date">Unlock Date</label>
-          <input type="date" id="date" name="udate" min="2025-03-09"> <!-- Updated to today + 1 -->
+          <label for="udate">Unlock Date</label> <!-- Fixed ID -->
+          <input type="date" id="udate" name="udate" min="2025-03-10">
         </div>
         <div class="form-group">
           <label for="upload">Add a Memory (Image/Video/File)</label>
@@ -47,10 +54,60 @@
         <button type="submit" class="cta-button">Seal Capsule</button>
       </form>
     </div>
-    <div class="footer">
-      <p>Your future awaits.</p>
+
+    <!-- Right Section - Public Capsules -->
+    <div class="section right-section">
+      <h2 class="section-title">Public Capsules</h2>
+      <div class="public-capsules-container">
+        {% for capsule in public_capsules %}
+          <div class="capsule-card">
+            <div class="capsule-header">
+              <span class="capsule-anonymous">Anonymous #{{ forloop.counter }}</span>
+              <div class="capsule-dates">
+                <span class="capsule-date">Unlock: {{ capsule.unlock_at }}</span>
+                <span class="capsule-created">Created: {{ capsule.created_at|date:"M d, Y H:i" }}</span>
+            </div>
+            </div>
+            <div class="capsule-content">
+              <p class="capsule-message" data-full-message="{{ capsule.msg }}">
+                  {{ capsule.msg|truncatechars:150 }}
+              </p>
+              {% if capsule.upload %}
+                  <div class="capsule-media">
+                      <button class="view-media-btn" onclick="window.open('{{ capsule.upload.url }}', '_blank')">
+                          <i class="fas fa-eye"></i> View Attachment
+                      </button>
+                  </div>
+              {% endif %}
+          </div>
+          </div>
+        {% empty %}
+          <p class="no-capsules">No public capsules yet. Be the first to share!</p>
+        {% endfor %}
+      </div>
     </div>
   </div>
+
+  <!-- Modal -->
+  <div class="capsule-modal">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <div class="modal-capsule">
+        <div class="modal-header">
+          <span class="modal-anonymous"></span>
+          <div class="modal-dates">
+            <span class="modal-unlock"></span>
+            <span class="modal-created"></span>
+          </div>
+        </div>
+        <div class="modal-body">
+          <p class="modal-message"></p>
+          <div class="modal-media"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="{% static 'capsule/script.js' %}"></script>
