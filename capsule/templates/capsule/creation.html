@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="icon" type="image/webp" href="{% static 'capsule/icon1.png' %}">
+  <link rel="icon" type="image/webp" href="{% static 'capsule/Media/icon.png' %}">
 </head>
 <body>
   <div class="split-container">
@@ -25,35 +25,75 @@
       {% elif error %}
         <p style="color: red;">Error: {{ error }}</p>
       {% endif %}
-      <form class="capsule-form" method="post" action="/create/" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="form-group">
-          <label for="msg">Your Message</label>
-          <textarea id="msg" name="msg" placeholder="Write something to your future self..." rows="4"></textarea>
-        </div>
-        <div class="form-group">
-          <label for="udate">Unlock Date</label> <!-- Fixed ID -->
-          <input type="date" id="udate" name="udate" min="2025-03-10">
-        </div>
-        <div class="form-group">
-          <label for="upload">Add a Memory (Image/Video/File)</label>
-          <input type="file" id="upload" name="upload" accept="image/*,video/*">
-        </div>
-        <div class="form-group">
-          <label for="email">Your Email</label>
-          <input type="email" id="email" name="email" placeholder="Enter your email for recall..." required>
-        </div>
-        <div class="form-group slider-group">
-          <label for="is-public">Capsule Visibility</label>
-          <div class="slider-container">
-            <span class="slider-label private">Private</span>
-            <input type="range" id="is-public" name="pripub" min="0" max="100" value="0">
-            <span class="slider-label public">Public</span>
-          </div>
-        </div>
-        <button type="submit" class="cta-button">Seal Capsule</button>
-      </form>
+      <!-- Update the form section -->
+<form class="capsule-form" method="post" action="/create/" enctype="multipart/form-data">
+  {% csrf_token %}
+  
+  <!-- Add Title field -->
+  <div class="form-group">
+    <label for="title">Capsule Title</label>
+    <input 
+        type="text" 
+        id="title" 
+        name="title" 
+        placeholder="Give you Capsule unique name" 
+        pattern="[a-zA-Z0-9_]+" 
+        minlength="3"
+        maxlength="30"
+        required
+    >
+    <div class="title-feedback"></div>
+</div>
+
+  <div class="form-group">
+    <label for="msg">Your Message</label>
+    <textarea id="msg" name="msg" placeholder="Write something to your future self..." rows="4" required></textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="udate">Unlock Date</label>
+    <input type="date" id="udate" name="udate" required>
+  </div>
+
+  <div class="form-group">
+    <label for="upload">Add a Memory (Image/Video/File)</label>
+    <input type="file" id="upload" name="upload" accept="image/*,video/*">
+  </div>
+
+  <div class="form-group">
+    <label for="email">Your Email</label>
+    <input type="email" id="email" name="email" placeholder="Enter your email for recall..." required>
+  </div>
+
+  <div class="form-group slider-group">
+    <label for="is-public">Capsule Visibility</label>
+   
+    <div class="slider-container">
+      <span class="slider-label private">Private</span>
+      <input type="range" id="is-public" name="pripub" min="0" max="100" value="100">
+      <span class="slider-label public">Public</span>
     </div>
+  </div>
+
+  <!-- Add Password field (initially hidden) -->
+  <div class="form-group password-group" style="display: none;">
+    <label for="password">Capsule Password</label>
+    <input type="password" id="password" name="password" placeholder="Enter a password to protect your capsule...">
+  </div>
+
+  <button type="submit" class="cta-button">Seal Capsule</button>
+</form>
+    </div>
+
+    <!-- Right Section - AI API -->
+    <div class="section right-section">
+      <h2 class="section-title">AI integration tab</h2>
+      
+
+
+    </div>
+  </div>
+
 
     <!-- Right Section - Public Capsules -->
     <div class="section right-section">
@@ -88,6 +128,7 @@
     </div>
   </div>
 
+  
   <!-- Modal -->
   <div class="capsule-modal">
     <div class="modal-content">
@@ -107,6 +148,16 @@
       </div>
     </div>
   </div>
+
+<!-- Success Modal -->
+<div class="success-modal">
+  <div class="success-content">
+    <div class="success-icon">✓</div>
+    <h3>Capsule Sealed!</h3>
+    <p>Your capsule will unlock on <span class="unlock-date"></span></p>
+  </div>
+</div>
+
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

@@ -237,10 +237,11 @@ input[type="range"]::-webkit-slider-thumb:hover {
   backdrop-filter: blur(10px);
   padding: 1.5rem;
   height: calc(100vh - 4rem); /* OG height */
-  position: sticky; /* OG position */
+  position: relative; /* OG position */
   top: 2rem;
   overflow-y: auto; /* Scroll here instead */
-  z-index: 10; /* Bring it forward */
+  z-index: 1; /* Bring it forward */
+  pointer-events: auto;
 }
 
 .right-section::-webkit-scrollbar {
@@ -282,7 +283,8 @@ input[type="range"]::-webkit-slider-thumb:hover {
   margin-bottom: 1rem;
   transition: all 0.3s ease;
   position: relative; /* Ensure stacking */
-  z-index: 11; /* Above section */
+  z-index: 2; /* Above section */
+  pointer-events: auto;
 }
 
 .capsule-card:hover {
@@ -351,7 +353,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   align-items: center;
   gap: 0.3rem;
   position: relative; /* Ensure stacking */
-  z-index: 12; /* Above card */
+  z-index: 3; /* Above card */
 }
 
 .view-media-btn:hover {
@@ -373,18 +375,19 @@ input[type="range"]::-webkit-slider-thumb:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(26, 26, 46, 0.7); /* Less opaque */
-  backdrop-filter: blur(4px); /* Softer blur */
-  z-index: 1000;
+  background: rgba(26, 26, 46, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
   opacity: 0;
   transition: opacity 0.3s ease;
-  display: flex; /* Center content */
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
+
 
 .capsule-modal.active {
   opacity: 1;
+  display: flex;
 }
 
 .modal-content {
@@ -399,6 +402,8 @@ input[type="range"]::-webkit-slider-thumb:hover {
   transform: translateY(-20px);
   opacity: 0;
   transition: all 0.3s ease;
+  position: relative;
+  z-index: 10000;
 }
 
 .capsule-modal.active .modal-content {
@@ -546,20 +551,27 @@ body.modal-open {
     top: 0;
     padding: 1rem;
     overflow-y: visible; /* No scrollbar */
+    z-index: 10; /* Maintain z-index on mobile */
+    pointer-events: auto; /* Allow clicks */
   }
 
   .public-capsules-container {
     height: auto; /* No forced scrollbar on mobile */
     overflow-y: visible; /* Let it flow */
+    position: relative; /* Add positioning context */
+    z-index: 20; /* Above right-section */
   }
 
   .capsule-card {
     margin-bottom: 0.8rem;
     padding: 0.8rem;
+    position: relative;
+    z-index: 30; /* Above container on mobile */
   }
 
   .capsule-modal {
     padding: 1rem;
+    z-index: 9999; /* Ensure modal stays on top */
   }
 
   .modal-content {
@@ -567,6 +579,8 @@ body.modal-open {
     padding: 1.5rem;
     max-height: 80vh; /* Limit modal height */
     overflow-y: auto; /* Scroll if too tall */
+    z-index: 10000;
+    position: relative;
   }
 
   .modal-header {
@@ -608,4 +622,101 @@ body.modal-open {
   .right-section {
     min-height: 250px;
   }
+}
+
+/* Add after existing form styles */
+.password-group {
+  transition: all 0.3s ease;
+}
+
+input[type="text"],
+input[type="password"] {
+  padding: 0.8rem;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #3a7bd5;
+  border-radius: 8px;
+  color: #fff;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+  outline: none;
+  border-color: #00d2ff;
+  box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+}
+
+.title-feedback {
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+  transition: color 0.3s ease;
+}
+
+.title-feedback.valid {
+  color: #51cf66;
+}
+
+.title-feedback.invalid {
+  color: #ff6b6b;
+}
+
+.title-feedback.error {
+  color: #ffd43b;
+}
+
+/* Success Modal Styles */
+.success-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(26, 26, 46, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-content {
+  background: linear-gradient(135deg, rgba(15, 52, 96, 0.95), rgba(26, 26, 46, 0.95));
+  border: 2px solid #51cf66;
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  transform: translateY(-20px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.success-icon {
+  font-size: 3rem;
+  color: #51cf66;
+  margin-bottom: 1rem;
+}
+
+.success-content h3 {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.success-content p {
+  color: #a8a8a8;
+  font-size: 1.1rem;
+}
+
+.success-modal.show {
+  display: flex;
+  opacity: 1;
+}
+
+.success-modal.show .success-content {
+  transform: translateY(0);
+  opacity: 1;
 }
