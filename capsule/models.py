@@ -2,7 +2,7 @@ from django.db import models
 
 class Capsule(models.Model):
     title = models.CharField(max_length=100, unique=True, null=True, blank=True)
-    msg = models.TextField(max_length=1000)
+    msg = models.TextField(max_length=10000)
     unlock_at = models.DateField()
     upload = models.FileField(upload_to='uploads/', null=True, blank=True)
     email = models.EmailField()

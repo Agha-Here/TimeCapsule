@@ -2,6 +2,7 @@ from django.shortcuts import render
 from capsule.models import Capsule
 from django.contrib import messages
 from django.http import JsonResponse
+from django.db.models import Q
 
 def index(request):
     return render(request, 'capsule/index.html')
@@ -24,7 +25,23 @@ def check_title(request):
     
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+
 def create_capsule(request):
+    # Get search query if it exists
+    search_query = request.GET.get('search', '')
+    
+    # Get public capsules with search filter if query exists
+    public_capsules = Capsule.objects.filter(is_public=True)
+    
+    if search_query:
+        public_capsules = public_capsules.filter(
+            Q(title__icontains=search_query) |
+            Q(id__icontains=search_query) |
+            Q(msg__icontains=search_query)
+        )
+    
+    public_capsules = public_capsules.order_by('-created_at')
+
     if request.method == 'POST':
         try:
             title = request.POST.get('title')
@@ -54,16 +71,37 @@ def create_capsule(request):
             # Return updated public capsules
             return render(request, 'capsule/creation.html', {
                 'success': True,
-                'public_capsules': Capsule.objects.filter(is_public=True).order_by('-created_at')
+                'public_capsules': public_capsules,
+                'search_query': search_query
             })
             
         except Exception as e:
             return render(request, 'capsule/creation.html', {
                 'error': str(e),
-                'public_capsules': Capsule.objects.filter(is_public=True).order_by('-created_at')
+                'public_capsules': public_capsules,
+                'search_query': search_query
             })
 
     return render(request, 'capsule/creation.html', {
-        'public_capsules': Capsule.objects.filter(is_public=True).order_by('-created_at')
+        'public_capsules': public_capsules,
+        'search_query': search_query
     })
 
+def search_capsules(request):
+    """AJAX endpoint for searching capsules"""
+    search_query = request.GET.get('q', '').strip()
+    
+    capsules = Capsule.objects.filter(is_public=True)
+    
+    if search_query:
+        capsules = capsules.filter(
+            Q(title__icontains=search_query) |
+            Q(id__icontains=search_query) |
+            Q(msg__icontains=search_query)
+        )
+    
+    capsules = capsules.order_by('-created_at')
+    
+    return render(request, 'capsule/capsule_list.html', {
+        'public_capsules': capsules
+    })
