@@ -97,6 +97,9 @@
   <div class="section right-section">
     <h2 class="section-title">Public Capsules</h2>
     <div class="public-capsules-container">
+      <div class="search-container">
+        <input type="text" id="capsule-search" placeholder="Search capsules by title, ID or content...">
+      </div>
       {% for capsule in public_capsules %}
       <div class="capsule-card" 
      data-title="{{ capsule.title }}" 
@@ -137,9 +140,6 @@
 {% empty %}
 <p class="no-capsules">No public capsules yet. Be the first to share!</p>
 {% endfor %}
-      <div class="search-container">
-        <input type="text" id="capsule-search" placeholder="Search capsules by title, ID or content...">
-      </div>
     </div>
   </div>
   </div>
