@@ -3,6 +3,7 @@ from capsule.models import Capsule
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q
+from .utils import send_capsule_sealed_email
 
 def index(request):
     return render(request, 'capsule/index.html')
@@ -67,6 +68,14 @@ def create_capsule(request):
                 capsule.upload = upload
                 
             capsule.save()
+
+
+             # Send sealed confirmation email
+            try:
+                send_capsule_sealed_email(capsule)
+                print("Email sent successfully")  # Debug print
+            except Exception as e:
+                print(f"Email error: {str(e)}")  # Debug print
             
             # Return updated public capsules
             return render(request, 'capsule/creation.html', {
