@@ -49,6 +49,7 @@ function isLocked(unlockDate) {
 // Function to handle media button clicks
 function handleMediaButtonClick(e) {
     e.stopPropagation();
+    const url = e.currentTarget.dataset.url;
     const card = e.target.closest('.capsule-card');
     const unlockDate = card.dataset.unlockDate;
     
@@ -58,7 +59,6 @@ function handleMediaButtonClick(e) {
         return;
     }
     
-    const url = e.currentTarget.dataset.url;
     if (url) {
         window.open(url, '_blank');
     }
@@ -66,6 +66,8 @@ function handleMediaButtonClick(e) {
 
 // Function to handle card clicks
 function handleCardClick(e) {
+    console.log('Card clicked'); // Debug log
+    
     if (e.target.closest('.view-media-btn')) {
         return; // Let the media button handler handle it
     }
@@ -73,26 +75,64 @@ function handleCardClick(e) {
     const card = e.currentTarget;
     const modal = document.querySelector('.capsule-modal');
     const unlockDate = card.dataset.unlockDate;
-    const anonymous = card.querySelector('.capsule-anonymous').textContent;
+    
+    if (!modal) {
+        console.error('Modal element not found');
+        return;
+    }
+
+    // Get card data
+    const title = card.querySelector('.capsule-anonymous').textContent;
     const unlock = card.querySelector('.capsule-date').textContent;
     const created = card.querySelector('.capsule-created').textContent;
     const message = card.querySelector('.capsule-message').dataset.fullMessage;
-    const hasMedia = card.querySelector('.capsule-media');
     const isCardLocked = isLocked(unlockDate);
 
-    modal.querySelector('.modal-anonymous').textContent = anonymous;
+    // Set modal content
+    modal.querySelector('.modal-anonymous').textContent = title;
     modal.querySelector('.modal-unlock').textContent = unlock;
     modal.querySelector('.modal-created').textContent = created;
     modal.querySelector('.modal-message').textContent = message;
 
-    // Handle locked state in modal
-    const modalContent = modal.querySelector('.modal-content');
-
-    // First, remove any existing lock overlays
-    const existingLockOverlays = modalContent.querySelectorAll('.modal-lock-overlay');
-    existingLockOverlays.forEach(overlay => overlay.remove());
-
+    // Handle media content
+    const modalMedia = modal.querySelector('.modal-media');
+    modalMedia.innerHTML = '';
+    const mediaBtn = card.querySelector('.view-media-btn');
     
+    if (mediaBtn) {
+        const newButton = document.createElement('button');
+        newButton.className = 'view-media-btn';
+        newButton.dataset.url = mediaBtn.dataset.url; // Copy the URL data attribute
+        newButton.innerHTML = `<i class="fas fa-eye"></i> View Attachment`;
+        
+        // Add click handler to the new button
+        newButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const url = this.dataset.url;
+            const unlockDate = card.dataset.unlockDate;
+            
+            if (isLocked(unlockDate)) {
+                e.preventDefault();
+                alert(`This capsule is locked until ${new Date(unlockDate).toLocaleDateString()}`);
+                return;
+            }
+            
+            if (url) {
+                window.open(url, '_blank');
+            }
+        });
+        
+        modalMedia.appendChild(newButton);
+    }
+
+    // Handle locked state
+    const modalContent = modal.querySelector('.modal-content');
+    const existingLockOverlay = modalContent.querySelector('.modal-lock-overlay');
+    
+    if (existingLockOverlay) {
+        existingLockOverlay.remove();
+    }
+
     if (isCardLocked) {
         modalContent.classList.add('locked');
         const lockOverlay = document.createElement('div');
@@ -105,34 +145,29 @@ function handleCardClick(e) {
         modalContent.appendChild(lockOverlay);
     } else {
         modalContent.classList.remove('locked');
-        const existingLockOverlay = modal.querySelector('.modal-lock-overlay');
-        if (existingLockOverlay) {
-            existingLockOverlay.remove();
-        }
     }
 
-    const modalMedia = modal.querySelector('.modal-media');
-    modalMedia.innerHTML = '';
-
-    if (hasMedia) {
-        const originalButton = hasMedia.querySelector('.view-media-btn');
-        if (originalButton) {
-            const newButton = originalButton.cloneNode(true);
-            newButton.addEventListener('click', handleMediaButtonClick);
-            modalMedia.appendChild(newButton);
-        }
-    }
-
+    // Show modal with animation
     modal.style.display = 'flex';
     document.body.classList.add('modal-open');
-    setTimeout(() => modal.classList.add('active'), 10);
+    requestAnimationFrame(() => {
+        modal.classList.add('active');
+    });
+}
+
+// Function to check if capsule is locked
+function isLocked(unlockDate) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time part for date comparison
+    const unlock = new Date(unlockDate);
+    return today < unlock;
 }
 
 // Function to attach event listeners to capsule cards
 function attachCardListeners() {
     const cards = document.querySelectorAll('.capsule-card');
     cards.forEach(card => {
-        // Remove existing listeners
+        // Remove existing listeners to prevent duplicates
         card.removeEventListener('click', handleCardClick);
         
         // Add new card click listener
@@ -151,11 +186,11 @@ function attachCardListeners() {
             const content = card.querySelector('.capsule-content');
             content.classList.add('locked');
             
-            // Get title and ID from the card
+            // Get title and ID
             const titleElement = card.querySelector('.capsule-anonymous');
             const titleText = titleElement ? titleElement.textContent.trim() : 'Anonymous';
             
-            // Remove any existing lock overlay
+            // Remove existing lock overlay
             const existingOverlay = card.querySelector('.capsule-lock-overlay');
             if (existingOverlay) {
                 existingOverlay.remove();
@@ -173,6 +208,7 @@ function attachCardListeners() {
         }
     });
 }
+
 // Function to update public capsules
 async function updatePublicCapsules() {
     try {
@@ -213,9 +249,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.querySelector('.capsule-form')) {
         const form = document.querySelector('.capsule-form');
         const dateInput = document.querySelector('input[type="date"]');
-        const visibilitySlider = document.querySelector('#is-public');
-        const passwordGroup = document.querySelector('.password-group');
-        const passwordInput = document.querySelector('#password');
         const successModal = document.querySelector('.success-modal');
         const modalTitleInput = document.querySelector('#modal-title');
         const titleFeedback = successModal.querySelector('.title-feedback');
@@ -225,25 +258,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const today = new Date().toISOString().split('T')[0];
         dateInput.value = today;
         dateInput.min = today;
-
-        // Set initial states
-        passwordGroup.style.display = 'none';
-        passwordInput.required = false;
-        document.querySelector('.slider-label.public').style.color = '#00d2ff';
-        document.querySelector('.slider-label.private').style.color = '#a8a8a8';
-        launchButton.disabled = true;
-
-        // Visibility slider handler
-        visibilitySlider.addEventListener('input', function() {
-            const isPrivate = parseInt(this.value) <= 50;
-            passwordGroup.style.display = isPrivate ? 'block' : 'none';
-            passwordInput.required = isPrivate;
-            
-            if (!isPrivate) passwordInput.value = '';
-
-            document.querySelector('.slider-label.public').style.color = !isPrivate ? '#00d2ff' : '#a8a8a8';
-            document.querySelector('.slider-label.private').style.color = isPrivate ? '#00d2ff' : '#a8a8a8';
-        });
 
         // Title input handler
         let titleCheckTimeout;
@@ -299,15 +313,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Form submission handler
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-
-            const isPrivate = parseInt(visibilitySlider.value) <= 50;
-            if (isPrivate && !passwordInput.value.trim()) {
-                alert('Please set a password for your private capsule.');
-                return;
-            }
-
-            // Store form data and show title modal
             window.tempFormData = new FormData(this);
+            
             const unlockDate = new Date(dateInput.value).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
@@ -385,9 +392,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Card modal close handlers
-    const modalClose = document.querySelector('.modal-close');
+    // Modal close handlers
     const modal = document.querySelector('.capsule-modal');
+    const modalClose = modal?.querySelector('.modal-close');
 
     if (modalClose) {
         modalClose.addEventListener('click', () => {
@@ -399,6 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Close modal when clicking outside
     if (modal) {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
@@ -410,8 +418,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Initialize public capsule card listeners
+
+    // Initialize card listeners
     attachCardListeners();
 
     // Add this function after your existing functions

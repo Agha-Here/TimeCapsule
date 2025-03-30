@@ -1,200 +1,147 @@
-<!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Your Capsule</title>
-  {% load static %}
-  <link rel="stylesheet" href="{% static 'capsule/styles.css' %}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="icon" href="{% static 'Media/logo1.png' %}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Capsule</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'capsule/styles.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" href="{% static 'Media/logo1.png' %}">
 </head>
 
 <body>
-  <div class="split-container">
-    <canvas id="bg"></canvas>
+    <div class="split-container">
+        <canvas id="bg"></canvas>
 
-    <!-- Left Section - Form -->
-    <div class="section left-section">
-      <h1 class="title">Create Your Capsule</h1>
-      <p class="subtitle">Seal your memories for the future</p>
-      {% if success %}
-      <p style="color: #00d2ff;">Capsule sealed successfully!</p>
-      {% elif error %}
-      <p style="color: red;">Error: {{ error }}</p>
-      {% endif %}
-      <!-- Update the form section -->
-      <form class="capsule-form" method="post" action="/create/" enctype="multipart/form-data">
-        {% csrf_token %}
-
-        {% comment %} <!-- Add Title field -->
-        <div class="form-group">
-          <label for="title">Capsule Title</label>
-          <input type="text" id="title" name="title" placeholder="Give you Capsule unique name" pattern="[a-zA-Z0-9_]+"
-            minlength="3" maxlength="30" required>
-          <div class="title-feedback"></div>
-        </div> {% endcomment %}
-
-        <div class="form-group">
-          <label for="msg">Your Message</label>
-          <textarea id="msg" name="msg" placeholder="Write something to your future self..." rows="4"
-            required></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="upload">Add a Memory (Image/Video/File)</label>
-          <input type="file" id="upload" name="upload" accept="image/*,video/*">
-        </div>
-
-        <div class="form-group">
-          <label for="udate">Unlock Date</label>
-          <input type="date" id="udate" name="udate" required>
-        </div>
-
-        <div class="form-group">
-          <label for="email">Your Email</label>
-          <input type="email" id="email" name="email" placeholder="Enter your email for recall..." required>
-        </div>
-
-        <div class="form-group slider-group">
-          <label for="is-public">Capsule Visibility</label>
-
-          <div class="slider-container">
-            <span class="slider-label private">Private</span>
-            <input type="range" id="is-public" name="pripub" min="0" max="100" value="100">
-            <span class="slider-label public">Public</span>
-          </div>
-        </div>
-
-        <!-- Add Password field (initially hidden) -->
-        <div class="form-group password-group" style="display: none;">
-          <label for="password">Capsule Password</label>
-          <input type="password" id="password" name="password"
-            placeholder="Enter a password to protect your capsule...">
-        </div>
-
-        <button type="submit" class="cta-button">Seal Capsule</button>
-      </form>
-    </div>
-
-    {% comment %} <!-- Right Section - AI API -->
-    <div class="section right-section">
-      <h2 class="section-title">AI integration tab</h2>
-
-
-
-    </div>
-  </div> {% endcomment %}
-
-
-  <!-- Right Section - Public Capsules -->
-
-  
-  <div class="section right-section">
-    <h2 class="section-title">Public Capsules</h2>
-    <div class="public-capsules-container">
-      <div class="search-container">
-        <input type="text" id="capsule-search" placeholder="Search capsules by title, ID or content...">
-      </div>
-      {% for capsule in public_capsules %}
-      <div class="capsule-card" 
-     data-title="{{ capsule.title }}" 
-     data-id="{{ capsule.id }}" 
-     data-message="{{ capsule.msg }}"
-     data-unlock-date="{{ capsule.unlock_at|date:'Y-m-d' }}">
-    <div class="capsule-header">
-        <span class="capsule-anonymous">
-            {% if capsule.title %}
-                {{ capsule.title }} # {{ capsule.id }}
-            {% else %}
-                Anonymous #{{ capsule.id }}
+        <!-- Left Section - Form -->
+        <div class="section left-section">
+            <h1 class="title">Create Your Capsule</h1>
+            <p class="subtitle">Seal your memories for the future</p>
+            {% if success %}
+            <p style="color: #00d2ff;">Capsule sealed successfully!</p>
+            {% elif error %}
+            <p style="color: red;">Error: {{ error }}</p>
             {% endif %}
-        </span>
-        <div class="capsule-dates">
-            <span class="capsule-date">{{ capsule.unlock_at }}</span>
-            <span class="capsule-created">{{ capsule.created_at|date:"M d, Y H:i" }}</span>
+
+            <form class="capsule-form" method="post" action="/create/" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="msg">Your Message</label>
+                    <textarea id="msg" name="msg" placeholder="Write something to your future self..." rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="upload">Add a Memory (Image/Video/File)</label>
+                    <input type="file" id="upload" name="upload" accept="image/*,video/*">
+                </div>
+
+                <div class="form-group">
+                    <label for="udate">Unlock Date</label>
+                    <input type="date" id="udate" name="udate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Your Email</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email for recall..." required>
+                </div>
+
+                <button type="submit" class="cta-button">Seal Capsule</button>
+            </form>
         </div>
-    </div>
-    <div class="capsule-content">
-        <p class="capsule-message" data-full-message="{{ capsule.msg }}">
-            {{ capsule.msg|truncatechars:150 }}
-        </p>
-        {% if capsule.upload %}
-            <div class="capsule-media">
-                <button class="view-media-btn" data-url="{{ capsule.upload.url }}">
-                    <i class="fas fa-eye"></i> View Attachment
-                </button>
+
+        <!-- Right Section - Public Capsules -->
+        <div class="section right-section">
+            <h2 class="section-title">Time Capsules</h2>
+            <div class="public-capsules-container">
+                <div class="search-container">
+                    <input type="text" id="capsule-search" placeholder="Search capsules by title, ID or content...">
+                </div>
+                {% for capsule in public_capsules %}
+                <div class="capsule-card" 
+                    data-title="{{ capsule.title }}" 
+                    data-id="{{ capsule.id }}" 
+                    data-message="{{ capsule.msg }}"
+                    data-unlock-date="{{ capsule.unlock_at|date:'Y-m-d' }}">
+                    <div class="capsule-header">
+                        <span class="capsule-anonymous">
+                            {% if capsule.title %}
+                                {{ capsule.title }} #{{ capsule.id }}
+                            {% else %}
+                                Anonymous #{{ capsule.id }}
+                            {% endif %}
+                        </span>
+                        <div class="capsule-dates">
+                            <span class="capsule-date">{{ capsule.unlock_at }}</span>
+                            <span class="capsule-created">{{ capsule.created_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </div>
+                    <div class="capsule-content">
+                        <p class="capsule-message" data-full-message="{{ capsule.msg }}">
+                            {{ capsule.msg|truncatechars:150 }}
+                        </p>
+                        {% if capsule.upload %}
+                            <div class="capsule-media">
+                                <button class="view-media-btn" data-url="{{ capsule.upload.url }}">
+                                    <i class="fas fa-eye"></i> View Attachment
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="capsule-lock-overlay">
+                        <i class="fas fa-lock"></i>
+                        <p>This capsule is locked until</p>
+                        <p class="unlock-date">{{ capsule.unlock_at }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="no-capsules">No capsules yet. Be the first to share!</p>
+                {% endfor %}
             </div>
-        {% endif %}
-    </div>
-    <div class="capsule-lock-overlay">
-        <i class="fas fa-lock"></i>
-        <p>This capsule is locked until</p>
-        <p class="unlock-date">{{ capsule.unlock_at }}</p>
-    </div>
-</div>
-{% empty %}
-<p class="no-capsules">No public capsules yet. Be the first to share!</p>
-{% endfor %}
-    </div>
-  </div>
-  </div>
-
-
-  <!-- Modal -->
-  <div class="capsule-modal">
-    <div class="modal-content">
-      <span class="modal-close">&times;</span>
-      <div class="modal-capsule">
-        <div class="modal-header">
-          <span class="modal-anonymous"></span>
-          <div class="modal-dates">
-            <span class="modal-unlock"></span>
-            <span class="modal-created"></span>
-          </div>
         </div>
-        <div class="modal-body">
-          <p class="modal-message"></p>
-          <div class="modal-media"></div>
+    </div>
+
+    <!-- Modal -->
+    <div class="capsule-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div class="modal-capsule">
+                <div class="modal-header">
+                    <span class="modal-anonymous"></span>
+                    <div class="modal-dates">
+                        <span class="modal-unlock"></span>
+                        <span class="modal-created"></span>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-message"></p>
+                    <div class="modal-media"></div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-
-  <!-- Success Modal -->
-  <!-- Update the success modal section in creation.html -->
-  <div class="success-modal">
-    <div class="success-content">
-      <div class="success-icon">✓</div>
-      <h3 class="modal-title">Almost Done!</h3>
-      <p class="modal-subtitle">Give your capsule a unique title</p>
-      <div class="title-input-container">
-        <input type="text" id="modal-title" name="title" placeholder="Enter title (letters, numbers, underscore only)"
-          pattern="[a-zA-Z0-9_]+" minlength="3" maxlength="30" required>
-        <div class="title-feedback"></div>
-      </div>
-      <button id="launch-capsule" class="cta-button" disabled>Launch Capsule</button>
-      <p class="unlock-date-text" style="display: none;">Your capsule will unlock on <span class="unlock-date"></span>
-      </p>
+    
+    <!-- Success Modal -->
+    <div class="success-modal">
+        <div class="success-content">
+            <div class="success-icon">✓</div>
+            <h3 class="modal-title">Almost Done!</h3>
+            <p class="modal-subtitle">Give your capsule a unique title</p>
+            <div class="title-input-container">
+                <input type="text" id="modal-title" name="title" placeholder="Enter title (letters, numbers, underscore only)"
+                    pattern="[a-zA-Z0-9_]+" minlength="3" maxlength="30" required>
+                <div class="title-feedback"></div>
+            </div>
+            <button id="launch-capsule" class="cta-button" disabled>Launch Capsule</button>
+            <p class="unlock-date-text" style="display: none;">Your capsule will unlock on <span class="unlock-date"></span></p>
+        </div>
     </div>
-  </div>
-  {% comment %} <!-- Success Modal -->
-  <div class="success-modal">
-    <div class="success-content">
-      <div class="success-icon">✓</div>
-      <h3>Capsule Sealed!</h3>
-      <p>Your capsule will unlock on <span class="unlock-date"></span></p>
-    </div>
-  </div> {% endcomment %}
 
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="{% static 'capsule/script.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{% static 'capsule/script.js' %}"></script>
 </body>
-
 </html>

@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from capsule.models import Capsule
-from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q
 from .utils import send_capsule_sealed_email
@@ -26,22 +25,16 @@ def check_title(request):
     
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-
 def create_capsule(request):
-    # Get search query if it exists
     search_query = request.GET.get('search', '')
-    
-    # Get public capsules with search filter if query exists
-    public_capsules = Capsule.objects.filter(is_public=True)
+    capsules = Capsule.objects.all().order_by('-created_at')
     
     if search_query:
-        public_capsules = public_capsules.filter(
+        capsules = capsules.filter(
             Q(title__icontains=search_query) |
             Q(id__icontains=search_query) |
             Q(msg__icontains=search_query)
         )
-    
-    public_capsules = public_capsules.order_by('-created_at')
 
     if request.method == 'POST':
         try:
@@ -49,19 +42,13 @@ def create_capsule(request):
             msg = request.POST.get('msg')
             unlock_at = request.POST.get('udate')
             email = request.POST.get('email')
-            is_public = int(request.POST.get('pripub', 100)) > 50
-            password = request.POST.get('password') if not is_public else None
-            
-            # Handle file upload
             upload = request.FILES.get('upload')
             
             capsule = Capsule(
                 title=title,
                 msg=msg,
                 unlock_at=unlock_at,
-                email=email,
-                is_public=is_public,
-                password=password
+                email=email
             )
             
             if upload:
@@ -69,30 +56,26 @@ def create_capsule(request):
                 
             capsule.save()
 
-
-             # Send sealed confirmation email
             try:
                 send_capsule_sealed_email(capsule)
-                print("Email sent successfully")  # Debug print
             except Exception as e:
-                print(f"Email error: {str(e)}")  # Debug print
+                print(f"Email error: {str(e)}")
             
-            # Return updated public capsules
             return render(request, 'capsule/creation.html', {
                 'success': True,
-                'public_capsules': public_capsules,
+                'public_capsules': capsules,
                 'search_query': search_query
             })
             
         except Exception as e:
             return render(request, 'capsule/creation.html', {
                 'error': str(e),
-                'public_capsules': public_capsules,
+                'public_capsules': capsules,
                 'search_query': search_query
             })
 
     return render(request, 'capsule/creation.html', {
-        'public_capsules': public_capsules,
+        'public_capsules': capsules,
         'search_query': search_query
     })
 
@@ -100,7 +83,7 @@ def search_capsules(request):
     """AJAX endpoint for searching capsules"""
     search_query = request.GET.get('q', '').strip()
     
-    capsules = Capsule.objects.filter(is_public=True)
+    capsules = Capsule.objects.all()
     
     if search_query:
         capsules = capsules.filter(

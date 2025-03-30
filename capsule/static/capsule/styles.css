@@ -159,58 +159,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
-/* Slider Styles */
-.slider-group {
-  margin: 1rem 0;
-}
-
-.slider-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  max-width: 280px;
-  margin: 0 auto;
-}
-
-.slider-label {
-  font-size: 0.9rem;
-}
-
-.slider-label.private {
-  color: #a8a8a8;
-}
-
-.slider-label.public {
-  color: #00d2ff;
-}
-
-input[type="range"] {
-  -webkit-appearance: none;
-  flex: 1;
-  height: 6px;
-  background: linear-gradient(90deg, #1a1a2e, #0f3460);
-  border-radius: 3px;
-  outline: none;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  background: radial-gradient(circle, #00d2ff 40%, #3a7bd5 80%);
-  border: 2px solid #00d2ff;
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 0 15px rgba(0, 210, 255, 0.8);
-  transition: all 0.3s ease;
-}
-
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 0 20px rgba(0, 210, 255, 1);
-}
-
 /* Form Button */
 .capsule-form .cta-button {
   background: linear-gradient(90deg, #00d2ff, #3a7bd5);
@@ -735,13 +683,8 @@ body.modal-open {
   }
 }
 
-/* Add after existing form styles */
-.password-group {
-  transition: all 0.3s ease;
-}
 
-input[type="text"],
-input[type="password"] {
+input[type="text"] {
   padding: 0.8rem;
   font-size: 0.95rem;
   background: rgba(255, 255, 255, 0.1);
@@ -752,8 +695,7 @@ input[type="password"] {
   width: 100%;
 }
 
-input[type="text"]:focus,
-input[type="password"]:focus {
+input[type="text"]:focus {
   outline: none;
   border-color: #00d2ff;
   box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);

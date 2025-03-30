@@ -6,10 +6,7 @@ class Capsule(models.Model):
     unlock_at = models.DateField()
     upload = models.FileField(upload_to='uploads/', null=True, blank=True)
     email = models.EmailField()
-    is_public = models.BooleanField(default=False)
-    password = models.CharField(max_length=128, null=True, blank=True)  # For private capsules
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        visibility = "Public" if self.is_public else "Private"
-        return f"{self.title} - {visibility} (Unlocks {self.unlock_at})"
+        return f"{self.title} (Unlocks {self.unlock_at})"
