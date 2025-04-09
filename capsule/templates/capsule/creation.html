@@ -62,10 +62,12 @@
                 </div>
                 {% for capsule in public_capsules %}
                 <div class="capsule-card" 
-                    data-title="{{ capsule.title }}" 
-                    data-id="{{ capsule.id }}" 
-                    data-message="{{ capsule.msg }}"
-                    data-unlock-date="{{ capsule.unlock_at|date:'Y-m-d' }}">
+                data-title="{{ capsule.title }}" 
+                data-id="{{ capsule.id }}"
+                {% if not capsule.is_locked %}
+                data-message="{{ capsule.msg }}"
+                {% endif %}
+                data-unlock-date="{{ capsule.unlock_at|date:'Y-m-d' }}">            
                     <div class="capsule-header">
                         <span class="capsule-anonymous">
                             {% if capsule.title %}
@@ -83,12 +85,12 @@
                         <p class="capsule-message" data-full-message="{{ capsule.msg }}">
                             {{ capsule.msg|truncatechars:150 }}
                         </p>
-                        {% if capsule.upload %}
-                            <div class="capsule-media">
-                                <button class="view-media-btn" data-url="{{ capsule.upload.url }}">
-                                    <i class="fas fa-eye"></i> View Attachment
-                                </button>
-                            </div>
+                        {% if capsule.has_attachment %}
+                        <div class="capsule-media">
+                            <button class="view-media-btn" data-url="{{ capsule.upload_url }}">
+                                <i class="fas fa-eye"></i> View Attachment
+                            </button>
+                        </div>
                         {% endif %}
                     </div>
                     <div class="capsule-lock-overlay">

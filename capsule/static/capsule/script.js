@@ -158,9 +158,21 @@ function handleCardClick(e) {
 // Function to check if capsule is locked
 function isLocked(unlockDate) {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time part for date comparison
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    
+    // Parse unlock date correctly
     const unlock = new Date(unlockDate);
+    unlock.setHours(0, 0, 0, 0); // Reset time to start of day
+    
+    // Fix the comparison logic:
+    // Return true if today is BEFORE unlock date (meaning it's still locked)
     return today < unlock;
+}
+
+// Function to format date for comparison
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];  // Returns YYYY-MM-DD format
 }
 
 // Function to attach event listeners to capsule cards
@@ -182,27 +194,31 @@ function attachCardListeners() {
 
         // Check if card should be locked
         const unlockDate = card.dataset.unlockDate;
-        if (isLocked(unlockDate)) {
+        const createdDate = card.querySelector('.capsule-created').textContent;
+        
+        // Check both conditions: unlock date reached OR created date equals unlock date
+        if (!isLocked(unlockDate) || formatDate(unlockDate) === formatDate(createdDate)) {
+            // Capsule is unlocked
             const content = card.querySelector('.capsule-content');
-            content.classList.add('locked');
+            content.classList.remove('locked');
             
-            // Get title and ID
-            const titleElement = card.querySelector('.capsule-anonymous');
-            const titleText = titleElement ? titleElement.textContent.trim() : 'Anonymous';
-            
-            // Remove existing lock overlay
+            // Remove existing lock overlay if it exists
             const existingOverlay = card.querySelector('.capsule-lock-overlay');
             if (existingOverlay) {
                 existingOverlay.remove();
             }
-
-            // Add new lock overlay
+        } else {
+            // Capsule is locked
+            const content = card.querySelector('.capsule-content');
+            content.classList.add('locked');
+            
+            // Add lock overlay
             const lockOverlay = document.createElement('div');
             lockOverlay.className = 'capsule-lock-overlay locked';
             lockOverlay.innerHTML = `
                 <i class="fas fa-lock"></i>
-                <p>Capsule "${titleText}" is locked until</p>
-                <p class="unlock-date">${new Date(unlockDate).toLocaleDateString()}</p>
+                <p>This capsule is locked until</p>
+                <p class="unlock-date">${formatDate(unlockDate)}</p>
             `;
             card.appendChild(lockOverlay);
         }
