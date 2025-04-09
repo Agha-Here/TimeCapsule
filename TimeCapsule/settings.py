@@ -139,3 +139,9 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'thetimecapsulenetwork@gmail.com'  # Your email address
 EMAIL_HOST_PASSWORD = 'bcxt rsqk exey fnbc'  # Your app-specific password
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}

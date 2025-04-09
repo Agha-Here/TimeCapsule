@@ -332,29 +332,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   pointer-events: none;
 }
 
-.modal-lock-message {
-  display: none;
-  text-align: center;
-  padding: 2rem;
-  color: #fff;
-}
-
-.modal-lock-message.show {
-  display: block;
-}
-
-.modal-lock-message i {
-  font-size: 3rem;
-  color: #00d2ff;
-  margin-bottom: 1rem;
-}
-
-.modal-lock-message .unlock-date {
-  color: #00d2ff;
-  font-weight: 500;
-  margin-top: 0.5rem;
-}
-
 /* Hide time part of created_at (e.g., "4:00am") */
 .capsule-created::after {
   content: ""; /* Clear default */
@@ -389,10 +366,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   z-index: 3; /* Above card */
 }
 
-.view-media-btn:hover {
-  transform: scale(1.05);
-  /* box-shadow: 0 0 10px rgba(0, 210, 255, 0.3); */
-}
 
 /* Animations */
 @keyframes float {
@@ -541,6 +514,108 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 body.modal-open {
   overflow: hidden;
+}
+
+/* Media Preview Modal Styles */
+.media-preview-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-preview-content {
+  position: relative;
+  width: 90%;
+  height: 90vh;
+  background: linear-gradient(135deg, rgba(15, 52, 96, 0.95), rgba(26, 26, 46, 0.95));
+  border: 2px solid #00d2ff;
+  border-radius: 15px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 28px;
+  color: #00d2ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10001;
+}
+
+.media-close:hover {
+  transform: rotate(90deg);
+  color: #fff;
+}
+
+.media-container {
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-container img {
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.media-container video {
+  max-width: 100%;
+  max-height: 85vh;
+  border-radius: 8px;
+}
+
+.media-container .download-btn {
+  background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  padding: 1rem 2.5rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.media-container .download-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+}
+
+.file-size-warning {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  display: none;
+}
+
+input[type="file"][disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cta-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: linear-gradient(90deg, #808080, #a0a0a0);
 }
 
 /* Media Queries */

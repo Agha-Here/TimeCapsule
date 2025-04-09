@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.utils import timezone
 from .utils import send_capsule_sealed_email
+from django.core.exceptions import ValidationError
+from django.conf import settings
 
 def index(request):
     return render(request, 'capsule/index.html')
@@ -25,6 +27,8 @@ def check_title(request):
         })
     
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+MAX_UPLOAD_SIZE = 104857600  # 100MB in bytes (100 * 1024 * 1024)
 
 def create_capsule(request):
     search_query = request.GET.get('search', '')
@@ -86,6 +90,10 @@ def create_capsule(request):
             email = request.POST.get('email')
             upload = request.FILES.get('upload')
             
+            if upload:
+                if upload.size > MAX_UPLOAD_SIZE:
+                    raise ValidationError(f'File size cannot exceed 100MB. Your file is {upload.size / 1048576:.2f}MB')
+
             # Convert unlock_at to date object for comparison
             unlock_date = timezone.datetime.strptime(unlock_at, '%Y-%m-%d').date()
             

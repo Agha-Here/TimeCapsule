@@ -16,10 +16,10 @@ const starGeometry = new THREE.BufferGeometry();
 const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
 
 const starVertices = [];
-for (let i = 0; i < 2000; i++) {
-    const x = (Math.random() - 0.5) * 2000;
-    const y = (Math.random() - 0.5) * 2000;
-    const z = (Math.random() - 0.5) * 2000;
+for (let i = 0; i < 1000; i++) {
+    const x = (Math.random() - 0.5) * 1200;
+    const y = (Math.random() - 0.5) * 1200;
+    const z = (Math.random() - 0.5) * 1200;
     starVertices.push(x, y, z);
 }
 
@@ -31,8 +31,8 @@ camera.position.z = 500;
 
 function animate() {
     requestAnimationFrame(animate);
-    stars.rotation.x += 0.0005;
-    stars.rotation.y += 0.0005;
+    stars.rotation.x += 0.0003;
+    stars.rotation.y += 0.0003;
     renderer.render(scene, camera);
 }
 animate();
@@ -60,7 +60,95 @@ function handleMediaButtonClick(e) {
     }
     
     if (url) {
-        window.open(url, '_blank');
+        showMediaPreview(url);
+    }
+}
+
+function showMediaPreview(url) {
+    const mediaModal = document.querySelector('.media-preview-modal');
+    const mediaContainer = mediaModal.querySelector('.media-container');
+    mediaContainer.innerHTML = '';
+
+    // Determine file type
+    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+    const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+    
+    if (isImage) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Media Preview';
+        mediaContainer.appendChild(img);
+    } else if (isVideo) {
+        const video = document.createElement('video');
+        video.src = url;
+        video.controls = true;
+        video.autoplay = true;
+        mediaContainer.appendChild(video);
+    } else {
+        // For other file types (PDFs, docs, etc)
+        const downloadBtn = document.createElement('a');
+        downloadBtn.href = url;
+        downloadBtn.className = 'download-btn';
+        downloadBtn.download = ''; // This will use the original filename
+        downloadBtn.innerHTML = `
+            <i class="fas fa-download"></i>
+            Download File
+        `;
+        mediaContainer.appendChild(downloadBtn);
+    }
+
+    // Show modal with animation
+    mediaModal.style.display = 'flex';
+    document.body.classList.add('modal-open');
+
+     // Function to stop video and close modal
+     const closeMediaModal = () => {
+        const video = mediaContainer.querySelector('video');
+        if (video) {
+            video.pause();  // Pause the video
+            video.currentTime = 0;  // Reset video to beginning
+            video.src = '';  // Clear the source
+        }
+        mediaModal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+    };
+
+    // Close button handler
+    const closeBtn = mediaModal.querySelector('.media-close');
+    closeBtn.onclick = closeMediaModal;
+
+    // Close on outside click
+    mediaModal.onclick = (e) => {
+        if (e.target === mediaModal) {
+            closeMediaModal();
+        }
+    };
+
+      // Close on ESC key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && mediaModal.style.display === 'flex') {
+            closeMediaModal();
+        }
+    });
+}
+
+function validateFileSize(input) {
+    const maxSize = 100 * 1024 * 1024; // 100MB in bytes
+    const warningElement = input.parentElement.querySelector('.file-size-warning');
+    const submitButton = document.querySelector('.capsule-form .cta-button');
+    
+    if (input.files.length > 0) {
+        const fileSize = input.files[0].size;
+        
+        if (fileSize > maxSize) {
+            warningElement.style.display = 'block';
+            warningElement.textContent = `File size (${(fileSize / 1048576).toFixed(2)}MB) exceeds 100MB limit`;
+            submitButton.disabled = true;
+            input.value = ''; // Clear the input
+        } else {
+            warningElement.style.display = 'none';
+            submitButton.disabled = false;
+        }
     }
 }
 
@@ -102,10 +190,10 @@ function handleCardClick(e) {
     if (mediaBtn) {
         const newButton = document.createElement('button');
         newButton.className = 'view-media-btn';
-        newButton.dataset.url = mediaBtn.dataset.url; // Copy the URL data attribute
+        newButton.dataset.url = mediaBtn.dataset.url;
         newButton.innerHTML = `<i class="fas fa-eye"></i> View Attachment`;
         
-        // Add click handler to the new button
+        // Update this part to use showMediaPreview instead of window.open
         newButton.addEventListener('click', function(e) {
             e.stopPropagation();
             const url = this.dataset.url;
@@ -118,7 +206,7 @@ function handleCardClick(e) {
             }
             
             if (url) {
-                window.open(url, '_blank');
+                showMediaPreview(url); // Use showMediaPreview instead of window.open
             }
         });
         
@@ -331,6 +419,18 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             window.tempFormData = new FormData(this);
             
+            const fileInput = document.getElementById('upload');
+            const maxSize = 100 * 1024 * 1024; // 100MB in bytes
+            
+            if (fileInput.files.length > 0) {
+                const fileSize = fileInput.files[0].size;
+                if (fileSize > maxSize) {
+                    e.preventDefault();
+                    alert('File size cannot exceed 100MB');
+                    return;
+                }
+            }
+
             const unlockDate = new Date(dateInput.value).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
