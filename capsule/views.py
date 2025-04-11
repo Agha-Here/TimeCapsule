@@ -6,6 +6,10 @@ from django.utils import timezone
 from .utils import send_capsule_sealed_email
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.core.files.uploadedfile import UploadedFile
+from cloudinary.uploader import upload_resource
+from cloudinary import uploader
+from django.core.cache import cache
 
 def index(request):
     return render(request, 'capsule/index.html')
@@ -93,6 +97,7 @@ def create_capsule(request):
             if upload:
                 if upload.size > MAX_UPLOAD_SIZE:
                     raise ValidationError(f'File size cannot exceed 100MB. Your file is {upload.size / 1048576:.2f}MB')
+           
 
             # Convert unlock_at to date object for comparison
             unlock_date = timezone.datetime.strptime(unlock_at, '%Y-%m-%d').date()
@@ -132,6 +137,22 @@ def create_capsule(request):
         'public_capsules': filtered_capsules,
         'search_query': search_query
     })
+
+def retry_failed_uploads():
+    failed_capsules = Capsule.objects.filter(upload_status='failed')
+    for capsule in failed_capsules:
+        try:
+            if capsule.upload:
+                result = uploader.upload(
+                    capsule.upload,
+                    resource_type="auto",
+                    folder=f"TimeCapsule/{capsule.id}"
+                )
+                capsule.upload_status = 'completed'
+                capsule.upload_error = None
+                capsule.save()
+        except Exception as e:
+            print(f"Retry failed for capsule {capsule.id}: {str(e)}")
 
 def search_capsules(request):
     """AJAX endpoint for searching capsules"""

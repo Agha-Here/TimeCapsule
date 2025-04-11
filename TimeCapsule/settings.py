@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,7 +44,26 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'capsule',
+    'cloudinary_storage',
+    'cloudinary',
 ]
+
+# Add Cloudinary settings
+CLOUDINARY_STORAGE = {
+   'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME', 'dvmyyzll1'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY', '792583239856716'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET', 'edCGoH5FWyJja0ZxorNS27kKqa0'),
+    'FOLDER': 'TimeCapsule',  # Custom folder name
+    'RESOURCE_TYPES': ['image', 'video', 'raw'],
+    'USE_FILENAME': True,  # Use original filename
+    'UNIQUE_FILENAME': True,  # Add unique identifier to filename
+    'OVERWRITE': False,  # Don't overwrite existing files
+    'QUALITY': 'auto:good',  # Quality setting for images
+    'SECURE': True  # Use HTTPS
+}
+
+# Configure media files to use Cloudinary
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 
 MIDDLEWARE = [
@@ -128,7 +152,7 @@ STATICFILES_DIRS = [BASE_DIR / "capsule/static"]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# MEDIA_ROOT = BASE_DIR / 'media'
 
 # Add these email settings after the STATIC_URL configuration
 
