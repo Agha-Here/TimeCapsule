@@ -38,6 +38,8 @@ function animate() {
 animate();
 
 let isSubmitting = false;
+let currentUpload = null;
+let currentProgressContainer = null;
 
 // Function to check if capsule is locked
 function isLocked(unlockDate) {
@@ -455,7 +457,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
             const button = this;
             const successModal = document.querySelector('.success-modal');
-            
+            const modalContent = successModal.querySelector('.success-content');
+        
             try {
                 isSubmitting = true;
                 button.disabled = true;
@@ -467,45 +470,88 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
         
                 formData.append('title', document.getElementById('modal-title').value.trim());
+                
+                const file = formData.get('upload');
+                
+                if (file && file.size > 0) {
+                    // Create progress container
+                    const progressContainer = document.createElement('div');
+                    progressContainer.className = 'upload-progress-container';
+                    progressContainer.innerHTML = `
+                        <div class="upload-status">Preparing to upload...</div>
+                        <div class="file-info">${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    `;
+                    modalContent.appendChild(progressContainer);
         
-                const response = await fetch('/create/', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    }
-                });
+                    // Create XHR for upload tracking
+                    const xhr = new XMLHttpRequest();
         
-                const data = await response.json();
+                    // Track upload progress
+                    xhr.upload.onprogress = (event) => {
+                        if (event.lengthComputable) {
+                            const percent = (event.loaded / event.total) * 100;
+                            const progressBar = progressContainer.querySelector('.progress-fill');
+                            const statusText = progressContainer.querySelector('.upload-status');
+                            progressBar.style.width = `${percent}%`;
+                            statusText.textContent = `Uploading... ${Math.round(percent)}%`;
+                        }
+                    };
         
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to create capsule');
-                }
-        
-                if (data.success) {
-                    // Update UI to show success
-                    successModal.querySelector('.modal-title').textContent = 'Capsule Sealed!';
-                    document.querySelector('.title-feedback').style.display = 'none';
-                    document.getElementById('modal-title').style.display = 'none';
-                    button.style.display = 'none';
-                    successModal.querySelector('.modal-subtitle').style.display = 'none';
-                    successModal.querySelector('.unlock-date-text').style.display = 'block';
-        
-                    // Update capsules list
-                    await updatePublicCapsules();
-        
-                    // Reset form and properly hide modal after delay
-                    setTimeout(() => {
-                        successModal.classList.remove('show');
-                        successModal.style.display = 'none'; // Important: hide the modal
-                        document.body.classList.remove('modal-open'); // Remove modal-open class
-                        resetForm();
+                    // Create upload promise
+                    const uploadPromise = new Promise((resolve, reject) => {
+                        xhr.onload = () => {
+                            if (xhr.status === 200) {
+                                try {
+                                    const response = JSON.parse(xhr.response);
+                                    resolve(response);
+                                } catch (e) {
+                                    reject(new Error('Invalid server response'));
+                                }
+                            } else {
+                                reject(new Error(`Upload failed: ${xhr.status}`));
+                            }
+                        };
+                        xhr.onerror = () => reject(new Error('Network error'));
                         
-                        // Clear the modal state
-                        const modalTitle = document.getElementById('modal-title');
-                        if (modalTitle) modalTitle.value = '';
-                        window.tempFormData = null;
-                    }, 2000);
+                        xhr.open('POST', '/create/', true);
+                        xhr.setRequestHeader('X-CSRFToken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                        xhr.send(formData);
+                    });
+        
+                    const response = await uploadPromise;
+                    if (response.success) {
+                        progressContainer.querySelector('.upload-status').textContent = 'Upload complete!';
+                        progressContainer.querySelector('.progress-fill').style.width = '100%';
+                        
+                        setTimeout(() => {
+                            progressContainer.remove();
+                            showSuccessState(successModal);
+                            updatePublicCapsules();
+                        }, 500);
+                    }
+        
+                } else {
+                    // No file upload, just submit normally
+                    const response = await fetch('/create/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    });
+        
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Failed to create capsule');
+                    }
+        
+                    if (data.success) {
+                        showSuccessState(successModal);
+                        await updatePublicCapsules();
+                    }
                 }
         
             } catch (error) {
@@ -517,11 +563,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.textContent = 'Launch Capsule';
             }
         });
+        
     }
 
     // Modal close handlers
     const modal = document.querySelector('.capsule-modal');
     const modalClose = modal?.querySelector('.modal-close');
+    const successModal = document.querySelector('.success-modal');
+    const successModalClose = successModal?.querySelector('.modal-close');
 
     if (modalClose) {
         modalClose.addEventListener('click', () => {
@@ -530,6 +579,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 modal.style.display = 'none';
                 document.body.classList.remove('modal-open');
             }, 300);
+        });
+    }
+
+    if (successModalClose) {
+        successModalClose.addEventListener('click', () => {
+            successModal.classList.remove('show');
+            successModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
         });
     }
 
@@ -604,37 +661,41 @@ document.addEventListener('DOMContentLoaded', function() {
 function resetForm() {
     const form = document.querySelector('.capsule-form');
     const dateInput = document.querySelector('input[type="date"]');
-    const modalTitleInput = document.getElementById('modal-title');
+    const modalTitleInput = document.querySelector('#modal-title');
     const titleFeedback = document.querySelector('.title-feedback');
-    const launchButton = document.getElementById('launch-capsule');
-    const successModal = document.querySelector('.success-modal');
+    const launchButton = document.querySelector('#launch-capsule');
     const today = new Date().toISOString().split('T')[0];
 
-    if (form) form.reset();
-    if (dateInput) dateInput.value = today;
-    if (modalTitleInput) {
-        modalTitleInput.value = '';
-        modalTitleInput.style.display = 'block';
-    }
-    if (launchButton) {
-        launchButton.style.display = 'block';
-        launchButton.disabled = true;
-        launchButton.classList.remove('ready');
-    }
-    if (titleFeedback) {
-        titleFeedback.style.display = 'block';
-        titleFeedback.textContent = '';
-    }
-    if (successModal) {
-        successModal.querySelector('.modal-title').textContent = 'Almost Done!';
-        successModal.querySelector('.modal-subtitle').style.display = 'block';
-        successModal.querySelector('.unlock-date-text').style.display = 'none';
-        successModal.style.display = 'none';
-        successModal.classList.remove('show');
-    }
-    
+    form.reset();
+    dateInput.value = today;
+    modalTitleInput.value = '';
+    modalTitleInput.style.display = 'block';
+    launchButton.style.display = 'block';
+    launchButton.disabled = true;
+    launchButton.classList.remove('ready');
+    titleFeedback.style.display = 'block';
+    titleFeedback.textContent = '';
+    successModal.querySelector('.modal-title').textContent = 'Almost Done!';
+    successModal.querySelector('.modal-subtitle').style.display = 'block';
+    successModal.querySelector('.unlock-date-text').style.display = 'none';
     window.tempFormData = null;
-    document.body.classList.remove('modal-open');
+}
+
+// Add this helper function if not already present
+function showSuccessState(modal) {
+    modal.querySelector('.modal-title').textContent = 'Capsule Sealed!';
+    document.querySelector('.title-feedback').style.display = 'none';
+    document.getElementById('modal-title').style.display = 'none';
+    document.getElementById('launch-capsule').style.display = 'none';
+    modal.querySelector('.modal-subtitle').style.display = 'none';
+    modal.querySelector('.unlock-date-text').style.display = 'block';
+
+    setTimeout(() => {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+        resetForm();
+    }, 2000);
 }
 
 // Window event listeners
