@@ -37,7 +37,7 @@ function animate() {
 }
 animate();
 
-// ...existing three.js code until animate() remains unchanged...
+let isSubmitting = false;
 
 // Function to check if capsule is locked
 function isLocked(unlockDate) {
@@ -450,13 +450,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Launch button handler
-        launchButton.addEventListener('click', async function() {
-            if (this.disabled) return;
-
+        document.getElementById('launch-capsule').addEventListener('click', async function() {
+            if (isSubmitting) return;
+        
+            const button = this;
+            const successModal = document.querySelector('.success-modal');
+            
             try {
+                isSubmitting = true;
+                button.disabled = true;
+                button.textContent = 'Launching...';
+        
                 const formData = window.tempFormData;
-                formData.append('title', modalTitleInput.value.trim());
-
+                if (!formData) {
+                    throw new Error('No form data available');
+                }
+        
+                formData.append('title', document.getElementById('modal-title').value.trim());
+        
                 const response = await fetch('/create/', {
                     method: 'POST',
                     body: formData,
@@ -464,46 +475,46 @@ document.addEventListener('DOMContentLoaded', function() {
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                     }
                 });
-
-                if (response.ok) {
-                    // Update modal title and show success message
+        
+                const data = await response.json();
+        
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to create capsule');
+                }
+        
+                if (data.success) {
+                    // Update UI to show success
                     successModal.querySelector('.modal-title').textContent = 'Capsule Sealed!';
-                    titleFeedback.style.display = 'none';
-                    modalTitleInput.style.display = 'none';
-                    launchButton.style.display = 'none';
+                    document.querySelector('.title-feedback').style.display = 'none';
+                    document.getElementById('modal-title').style.display = 'none';
+                    button.style.display = 'none';
                     successModal.querySelector('.modal-subtitle').style.display = 'none';
                     successModal.querySelector('.unlock-date-text').style.display = 'block';
-                    
-                    // Update public capsules
+        
+                    // Update capsules list
                     await updatePublicCapsules();
-                    
-                    // Reset after 2 seconds
+        
+                    // Reset form and properly hide modal after delay
                     setTimeout(() => {
                         successModal.classList.remove('show');
-                        setTimeout(() => {
-                            successModal.style.display = 'none';
-                            form.reset();
-                            dateInput.value = today;
-                            visibilitySlider.value = 100;
-                            passwordGroup.style.display = 'none';
-                            passwordInput.required = false;
-                            modalTitleInput.value = '';
-                            modalTitleInput.style.display = 'block';
-                            launchButton.style.display = 'block';
-                            launchButton.disabled = true;
-                            launchButton.classList.remove('ready');
-                            titleFeedback.style.display = 'block';
-                            titleFeedback.textContent = '';
-                            successModal.querySelector('.modal-title').textContent = 'Almost Done!';
-                            successModal.querySelector('.modal-subtitle').style.display = 'block';
-                            successModal.querySelector('.unlock-date-text').style.display = 'none';
-                            window.tempFormData = null;
-                        }, 300);
+                        successModal.style.display = 'none'; // Important: hide the modal
+                        document.body.classList.remove('modal-open'); // Remove modal-open class
+                        resetForm();
+                        
+                        // Clear the modal state
+                        const modalTitle = document.getElementById('modal-title');
+                        if (modalTitle) modalTitle.value = '';
+                        window.tempFormData = null;
                     }, 2000);
                 }
+        
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error creating capsule. Please try again.');
+                alert(`Error creating capsule: ${error.message}`);
+            } finally {
+                isSubmitting = false;
+                button.disabled = false;
+                button.textContent = 'Launch Capsule';
             }
         });
     }
@@ -588,6 +599,43 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     setupSearch();
 });
+
+// Add reset form function if not already present
+function resetForm() {
+    const form = document.querySelector('.capsule-form');
+    const dateInput = document.querySelector('input[type="date"]');
+    const modalTitleInput = document.getElementById('modal-title');
+    const titleFeedback = document.querySelector('.title-feedback');
+    const launchButton = document.getElementById('launch-capsule');
+    const successModal = document.querySelector('.success-modal');
+    const today = new Date().toISOString().split('T')[0];
+
+    if (form) form.reset();
+    if (dateInput) dateInput.value = today;
+    if (modalTitleInput) {
+        modalTitleInput.value = '';
+        modalTitleInput.style.display = 'block';
+    }
+    if (launchButton) {
+        launchButton.style.display = 'block';
+        launchButton.disabled = true;
+        launchButton.classList.remove('ready');
+    }
+    if (titleFeedback) {
+        titleFeedback.style.display = 'block';
+        titleFeedback.textContent = '';
+    }
+    if (successModal) {
+        successModal.querySelector('.modal-title').textContent = 'Almost Done!';
+        successModal.querySelector('.modal-subtitle').style.display = 'block';
+        successModal.querySelector('.unlock-date-text').style.display = 'none';
+        successModal.style.display = 'none';
+        successModal.classList.remove('show');
+    }
+    
+    window.tempFormData = null;
+    document.body.classList.remove('modal-open');
+}
 
 // Window event listeners
 window.addEventListener('resize', updateCanvasSize);

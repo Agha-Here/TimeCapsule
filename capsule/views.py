@@ -7,8 +7,8 @@ from .utils import send_capsule_sealed_email
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
-from cloudinary.uploader import upload_resource
-from cloudinary import uploader
+import cloudinary
+import cloudinary.uploader
 from django.core.cache import cache
 
 def index(request):
@@ -79,7 +79,7 @@ def create_capsule(request):
             'unlock_at': capsule.unlock_at,
             'created_at': capsule.created_at,
             'has_attachment': bool(capsule.upload),
-            'upload_url': capsule.upload.url if (capsule.upload and not is_locked) else '',
+            'upload_url': capsule.upload if (capsule.upload and not is_locked) else '',
             'is_locked': is_locked,
             'search_preview': capsule.msg[:100] if not is_locked else None,
             'data_message': capsule.msg if not is_locked else ''
@@ -93,51 +93,72 @@ def create_capsule(request):
             unlock_at = request.POST.get('udate')
             email = request.POST.get('email')
             upload = request.FILES.get('upload')
-            
-            if upload:
-                if upload.size > MAX_UPLOAD_SIZE:
-                    raise ValidationError(f'File size cannot exceed 100MB. Your file is {upload.size / 1048576:.2f}MB')
-           
 
-            # Convert unlock_at to date object for comparison
-            unlock_date = timezone.datetime.strptime(unlock_at, '%Y-%m-%d').date()
-            
+            # Create capsule first to get ID
             capsule = Capsule(
                 title=title,
                 msg=msg,
-                unlock_at=unlock_date,
+                unlock_at=unlock_at,
                 email=email
             )
-            
-            if upload:
-                capsule.upload = upload
-                
-            capsule.save()
+            capsule.save()  # Save to get ID
 
+            if upload:
+                try:
+                    if upload.size > MAX_UPLOAD_SIZE:
+                        capsule.delete()
+                        raise ValidationError(f'File size cannot exceed 100MB')
+
+                    # Configure Cloudinary
+                    cloudinary.config(
+                        cloud_name=settings.CLOUDINARY_STORAGE['CLOUD_NAME'],
+                        api_key=settings.CLOUDINARY_STORAGE['API_KEY'],
+                        api_secret=settings.CLOUDINARY_STORAGE['API_SECRET']
+                    )
+
+                    # Upload to Cloudinary with proper folder structure
+                    upload_result = cloudinary.uploader.upload(
+                        upload,
+                        folder=f"TimeCapsule/{capsule.id}",
+                        resource_type="auto",
+                        chunk_size=6000000,
+                        timeout=180,
+                        use_filename=True,
+                        unique_filename=False
+                    )
+
+                    # Store the direct Cloudinary URL
+                    capsule.upload = upload_result['secure_url']
+                    capsule.save()
+
+                except Exception as e:
+                    capsule.delete()  # Clean up on failure
+                    raise ValidationError(f'Upload failed: {str(e)}')
+
+            # Send email notification
             try:
                 send_capsule_sealed_email(capsule)
             except Exception as e:
                 print(f"Email error: {str(e)}")
-            
-            # Re-filter capsules after new addition
-            return render(request, 'capsule/creation.html', {
+
+            return JsonResponse({
                 'success': True,
-                'public_capsules': filtered_capsules,
-                'search_query': search_query
+                'message': 'Capsule sealed successfully!',
+                'capsule_id': capsule.id
             })
-            
+
         except Exception as e:
-            return render(request, 'capsule/creation.html', {
-                'error': str(e),
-                'public_capsules': filtered_capsules,
-                'search_query': search_query
-            })
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
 
     return render(request, 'capsule/creation.html', {
         'public_capsules': filtered_capsules,
         'search_query': search_query
     })
-
+    
 def retry_failed_uploads():
     failed_capsules = Capsule.objects.filter(upload_status='failed')
     for capsule in failed_capsules:
