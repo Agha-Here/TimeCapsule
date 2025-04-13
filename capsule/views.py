@@ -36,7 +36,7 @@ MAX_UPLOAD_SIZE = 104857600  # 100MB in bytes (100 * 1024 * 1024)
 
 def create_capsule(request):
     search_query = request.GET.get('search', '')
-    today = timezone.localtime().date()
+    today = timezone.now().date()
     capsules = Capsule.objects.all().order_by('-created_at')
     
     if search_query:

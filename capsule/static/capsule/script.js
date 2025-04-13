@@ -1,3 +1,8 @@
+// Early device detection
+function isMobileDevice() {
+    return window.innerWidth <= 768;
+}
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg') });
@@ -10,16 +15,44 @@ function updateCanvasSize() {
 }
 
 updateCanvasSize();
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for better performance
+
+// Different settings for mobile and desktop
+const settings = {
+    desktop: {
+        starCount: 2000,
+        starSize: 1.5,
+        spaceSize: 1300,
+        cameraPosition: 600,
+        rotationSpeed: 0.0004
+    },
+    mobile: {  // Changed from 'isMobileDevice' to 'mobile'
+        starCount: 2000,    // Increased star count
+        starSize: 0.8,      // Smaller stars
+        spaceSize: 800,     // Smaller space for denser field
+        cameraPosition: 600, // Closer camera
+        rotationSpeed: 0.0003
+    }
+};
+
+// Get current settings based on device
+const currentSettings = isMobileDevice() ? settings.mobile : settings.desktop;
 
 const starGeometry = new THREE.BufferGeometry();
-const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
+const starMaterial = new THREE.PointsMaterial({ 
+    color: 0xffffff,
+    size: currentSettings.starSize,
+    sizeAttenuation: true, // This makes stars look better at different distances
+    transparent: true,
+    opacity: 0.8  // Slightly transparent stars
+});
+
 
 const starVertices = [];
-for (let i = 0; i < 1000; i++) {
-    const x = (Math.random() - 0.5) * 1200;
-    const y = (Math.random() - 0.5) * 1200;
-    const z = (Math.random() - 0.5) * 1200;
+for (let i = 0; i < currentSettings.starCount; i++) {
+    const x = (Math.random() - 0.5) * currentSettings.spaceSize;
+    const y = (Math.random() - 0.5) * currentSettings.spaceSize;
+    const z = (Math.random() - 0.5) * currentSettings.spaceSize;
     starVertices.push(x, y, z);
 }
 
@@ -27,15 +60,24 @@ starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVerti
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
 
-camera.position.z = 500;
+camera.position.z = currentSettings.cameraPosition;
 
 function animate() {
     requestAnimationFrame(animate);
-    stars.rotation.x += 0.0003;
-    stars.rotation.y += 0.0003;
+    stars.rotation.x += currentSettings.rotationSpeed;
+    stars.rotation.y += currentSettings.rotationSpeed;
     renderer.render(scene, camera);
 }
 animate();
+
+// Handle resize properly
+window.addEventListener('resize', () => {
+    updateCanvasSize();
+    // Update settings if device type changes
+    const newSettings = isMobileDevice() ? settings.mobile : settings.desktop;
+    starMaterial.size = newSettings.starSize;
+    camera.position.z = newSettings.cameraPosition;
+});
 
 let isSubmitting = false;
 let currentUpload = null;

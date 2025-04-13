@@ -12,7 +12,6 @@ class Capsule(models.Model):
     title = models.CharField(max_length=100, unique=True, null=True, blank=True)
     msg = models.TextField(max_length=10000)
     unlock_at = models.DateField()
-    # Update upload field to use get_upload_path
     upload = models.URLField(max_length=500, null=True, blank=True)
     email = models.EmailField()
     created_at = models.DateTimeField(auto_now_add=True)

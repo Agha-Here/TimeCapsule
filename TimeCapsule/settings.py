@@ -25,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k0ujjomgg^=h$a3k2n+r8#4g#ioakv*te#$861cved)-&7w0uc'
+SECRET_KEY =  os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
@@ -50,16 +50,16 @@ INSTALLED_APPS = [
 
 # Add Cloudinary settings
 CLOUDINARY_STORAGE = {
-   'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME', 'dvmyyzll1'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY', '792583239856716'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET', 'edCGoH5FWyJja0ZxorNS27kKqa0'),
-    'FOLDER': 'TimeCapsule',  # Custom folder name
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+    'FOLDER': 'TimeCapsule',
     'RESOURCE_TYPES': ['image', 'video', 'raw'],
-    'USE_FILENAME': True,  # Use original filename
-    'UNIQUE_FILENAME': True,  # Add unique identifier to filename
-    'OVERWRITE': False,  # Don't overwrite existing files
-    'QUALITY': 'auto:good',  # Quality setting for images
-    'SECURE': True  # Use HTTPS
+    'USE_FILENAME': True,
+    'UNIQUE_FILENAME': True,
+    'OVERWRITE': False,
+    'QUALITY': 'auto:good',
+    'SECURE': True
 }
 
 # Configure media files to use Cloudinary
@@ -103,8 +103,15 @@ WSGI_APPLICATION = 'TimeCapsule.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+        'OPTIONS': {
+            'init_command': "SET time_zone = '+05:00'"
+        }
     }
 }
 
@@ -137,7 +144,7 @@ TIME_ZONE = 'Asia/Karachi'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -161,8 +168,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'  # Use your email provider
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'thetimecapsulenetwork@gmail.com'  # Your email address
-EMAIL_HOST_PASSWORD = 'bcxt rsqk exey fnbc'  # Your app-specific password
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
 
 CACHES = {
     'default': {
