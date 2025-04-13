@@ -75,6 +75,7 @@ def create_capsule(request):
         filtered_capsule = {
             'id': capsule.id,
             'title': capsule.title or 'Anonymous',
+            'capsule_id': f"TC-{capsule.id:04d}",  # TC = Time Capsule
             'msg': capsule.msg if not is_locked else "🔒 That's cheating bruh",
             'unlock_at': capsule.unlock_at,
             'created_at': capsule.created_at,

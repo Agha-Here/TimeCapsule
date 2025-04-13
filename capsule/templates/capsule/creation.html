@@ -72,13 +72,11 @@
                 {% endif %}
                 data-unlock-date="{{ capsule.unlock_at|date:'Y-m-d' }}">            
                     <div class="capsule-header">
-                        <span class="capsule-anonymous">
-                            {% if capsule.title %}
-                                {{ capsule.title }} #{{ capsule.id }}
-                            {% else %}
-                                Anonymous #{{ capsule.id }}
-                            {% endif %}
-                        </span>
+                        <div class="capsule-heading">
+                        <span class="capsule-anonymous">{{ capsule.title }}  </span>
+                        <span class="capsule-id">{{ capsule.capsule_id }}</span>
+                    </div>
+
                         <div class="capsule-dates">
                             <span class="capsule-date">{{ capsule.unlock_at }}</span>
                             <span class="capsule-created">{{ capsule.created_at|date:"M d, Y H:i" }}</span>
@@ -86,7 +84,7 @@
                     </div>
                     <div class="capsule-content">
                         <p class="capsule-message" data-full-message="{{ capsule.msg }}">
-                            {{ capsule.msg|truncatechars:150 }}
+                            {{ capsule.msg|truncatechars:210 }}
                         </p>
                         {% if capsule.has_attachment %}
                         <div class="capsule-media">
