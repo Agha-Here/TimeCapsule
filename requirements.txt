@@ -1,0 +1,7 @@
+django
+python-dotenv
+mysqlclient
+cloudinary
+django-cloudinary-storage
+gunicorn
+whitenoise
