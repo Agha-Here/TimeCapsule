@@ -57,9 +57,6 @@ def create_capsule(request):
 
         if today >= unlock_date or unlock_date == created_date:
             is_locked = False
-            print(f"Capsule {capsule.id} is unlocked")
-        else:
-            print(f"Capsule {capsule.id} is locked")
 
         # Create filtered capsule object...
         filtered_capsule = {
