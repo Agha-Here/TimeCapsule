@@ -3,7 +3,7 @@ from capsule.models import Capsule
 from django.http import JsonResponse
 from django.db.models import Q
 from django.utils import timezone
-from .utils import send_capsule_sealed_email
+from .utils import send_capsule_created_email
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
@@ -54,17 +54,7 @@ def create_capsule(request):
         
         # Default to locked
         is_locked = True
-        
-        # Debug print to check dates
-        print(f"Capsule {capsule.id}:")
-        print(f"Today: {today}")
-        print(f"Unlock date: {unlock_date}")
-        print(f"Created date: {created_date}")
-        
-        # Check unlock conditions:
-        # 1. Today should be EQUAL TO unlock_date (for today's capsules)
-        # 2. OR Today should be AFTER unlock_date (for past capsules)
-        # 3. OR Unlock date equals creation date (for immediate unlock)
+
         if today >= unlock_date or unlock_date == created_date:
             is_locked = False
             print(f"Capsule {capsule.id} is unlocked")
@@ -138,7 +128,7 @@ def create_capsule(request):
 
             # Send email notification
             try:
-                send_capsule_sealed_email(capsule)
+                send_capsule_created_email(capsule)
             except Exception as e:
                 print(f"Email error: {str(e)}")
 

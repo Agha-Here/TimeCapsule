@@ -1,19 +1,28 @@
 from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
+from django.utils.timezone import now  # helpful for unlock comparison if needed
 
-def send_capsule_sealed_email(capsule):
-    """Send email when capsule is sealed"""
+def send_capsule_created_email(capsule):
+    """Send email right after capsule is created"""
     try:
-        subject = f'TimeCapsule: Your Capsule "{capsule.title}#{capsule.id}" Has Been Sealed!'
+        # Convert both to string format for comparison
+        created_date = capsule.created_at.date().strftime('%Y-%m-%d')
+        unlock_date = capsule.unlock_at.strftime('%Y-%m-%d') if hasattr(capsule.unlock_at, 'strftime') else capsule.unlock_at
+
+        if created_date == unlock_date:
+            subject = f'TimeCapsule: Your Capsule "{capsule.title}#{capsule.id}" Has Been Posted!'
+            template_name = 'capsule/emails/capsule_post.html'
+        else:
+            subject = f'TimeCapsule: Your Capsule "{capsule.title}#{capsule.id}" Has Been Sealed!'
+            template_name = 'capsule/emails/capsule_sealed.html'
         
-        # Pass just the capsule object to the template
         context = {
             'capsule': capsule
         }
-        
-        html_message = render_to_string('capsule/emails/capsule_sealed.html', context)
-        
+
+        html_message = render_to_string(template_name, context)
+
         send_mail(
             subject=subject,
             message='',
@@ -22,24 +31,22 @@ def send_capsule_sealed_email(capsule):
             recipient_list=[capsule.email],
             fail_silently=False
         )
-        print(f"Sealed email sent successfully to {capsule.email}")
-        
+
     except Exception as e:
-        print(f"Error sending sealed email: {str(e)}")
+        print(f"Error sending email: {str(e)}")
         raise
 
 def send_capsule_unlock_email(capsule):
     """Send email when capsule is unlocked"""
     try:
         subject = f'TimeCapsule: Your Capsule "{capsule.title}#{capsule.id}" Is Now Unlocked!'
-        
-        # Pass just the capsule object to the template
+
         context = {
             'capsule': capsule
         }
-        
+
         html_message = render_to_string('capsule/emails/capsule_unlocked.html', context)
-        
+
         send_mail(
             subject=subject,
             message='',
@@ -49,7 +56,7 @@ def send_capsule_unlock_email(capsule):
             fail_silently=False
         )
         print(f"Unlock email sent successfully to {capsule.email}")
-        
+
     except Exception as e:
         print(f"Error sending unlock email: {str(e)}")
         raise

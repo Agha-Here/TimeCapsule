@@ -2,17 +2,17 @@
 <html>
 <head>
     <style>
-        body { 
-            font-family: 'Helvetica Neue', Arial, sans-serif; 
-            line-height: 1.6; 
-            color: #2c3e50; 
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
             margin: 0;
             padding: 0;
             background-color: #f8f9fa;
         }
-        .container { 
-            max-width: 600px; 
-            margin: 0 auto; 
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
             padding: 30px 20px;
             background-color: #ffffff;
             border-radius: 10px;
@@ -25,15 +25,15 @@
         .logo img {
             height: 60px;
         }
-        .header { 
-            color: #00d2ff; 
-            font-size: 28px; 
+        .header {
+            color: #00d2ff;
+            font-size: 28px;
             margin-bottom: 25px;
             text-align: center;
             font-weight: 600;
         }
-        .content { 
-            background: #f8f9fa; 
+        .content {
+            background: #f8f9fa;
             padding: 25px;
             border-radius: 8px;
             margin: 20px 0;
@@ -45,22 +45,22 @@
             border-radius: 6px;
             margin: 15px 0;
         }
-        .button {
-            display: inline-block;
-            padding: 15px 30px;
-            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            font-weight: 600;
-            margin: 20px 0;
-            text-align: center;
-        }
         .highlight {
             color: #00d2ff;
             font-weight: 600;
         }
-        .footer { 
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #00d2ff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .footer {
             margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid #eee;
@@ -81,46 +81,37 @@
 </head>
 <body>
     <div class="container">
+
         <div class="header">
-            🎉 Your Time Capsule Is Now Unlocked! 🎉
+            Your Capsule Is Now Unlocked 🔓
         </div>
+
         <div class="content">
-            <p>Hello there,</p>
-            <p>The moment has arrived! Your digital time capsule is now unlocked and ready to be opened.</p>
-            
+            <p>Hello again,</p>
+            <p>The wait is over! Your Time Capsule is officially unlocked and ready for you to revisit.</p>
+
             <div class="capsule-info">
                 <p><strong>Capsule Details:</strong></p>
                 <p>🏷️ Title: <span class="highlight">{{ capsule.title }} #{{ capsule.id }}</span></p>
-                <p>📅 Created: <span class="highlight">{{ capsule.created_at|date:"l, F j, Y" }}</span></p>
-                <p>🔓 Unlocked: <span class="highlight">{{ capsule.unlock_at|date:"l, F j, Y" }}</span></p>
-                <p>🎉 Status: Now Unlocked!</p>
+                <p>🕒 Created On: <span class="highlight">{{ capsule.created_at }}</span></p>
+                <p>🔓 Unlock On: <span class="highlight">{{ capsule.unlock_at }}</span></p>
+                <p>📦 Status: Unlocked and Viewable</p>
             </div>
 
-            <p style="text-align: center;">
-                <a href="http://your-domain.com/capsule/{{ capsule.id }}" class="button">
-                    View Your Memories
-                </a>
-            </p>
+            <p>You can now view the memories you preserved. Click the button below to access your capsule:</p>
 
-            <p><strong>What's inside your capsule?</strong></p>
-            <ul>
-                <li>Your personal message from the past</li>
-                {% if capsule.upload %}
-                <li>Media attachments you included</li>
-                {% endif %}
-                <li>A snapshot of your thoughts and memories</li>
-            </ul>
+            <a href="https://dummy-timecapsule-domain.com/capsules/{{ capsule.id }}" class="btn">View Your Capsule</a>
+
+            <p>If you encounter any issues accessing your capsule, please email us your issue.</p>
         </div>
 
         <div class="footer">
             <p>This is an automated message from TimeCapsule Network. Please do not reply to this email.</p>
-            
+
             <div class="social-links">
-                <a href="#">Twitter</a> | 
-                <a href="#">Facebook</a> | 
-                <a href="#">Instagram</a>
+                <a href="https://www.instagram.com/_agha.rafay_/">Instagram</a>
             </div>
-            
+
             <p style="margin-top: 20px; font-size: 12px;">
                 TimeCapsule Network | Preserving Today's Memories for Tomorrow<br>
                 © {% now "Y" %} TimeCapsule Network. All rights reserved.
