@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from capsule.models import Capsule
 from django.http import JsonResponse
 from django.db.models import Q
@@ -181,3 +182,27 @@ def search_capsules(request):
     return render(request, 'capsule/capsule_list.html', {
         'public_capsules': capsules
     })
+
+def view_capsule(request, capsule_id):
+    capsule = get_object_or_404(Capsule, id=capsule_id)
+    today = timezone.now().date()
+    
+    is_locked = True
+    if today >= capsule.unlock_at or capsule.unlock_at == capsule.created_at.date():
+        is_locked = False
+    
+    context = {
+        'capsule': {
+            'id': capsule.id,
+            'title': capsule.title or 'Anonymous',
+            'capsule_id': f"TC-{capsule.id:04d}",
+            'msg': capsule.msg if not is_locked else "🔒 That's cheating bruh",
+            'unlock_at': capsule.unlock_at,
+            'created_at': capsule.created_at,
+            'has_attachment': bool(capsule.upload),
+            'upload_url': capsule.upload if (capsule.upload and not is_locked) else '',
+            'is_locked': is_locked
+        }
+    }
+    
+    return render(request, 'capsule/view_capsule.html', context)

@@ -86,8 +86,19 @@
                 <p>📦 Status: Posted & Ready</p>
             </div>
 
-            <p>Your capsule has been successfully unlocked and is now available for viewing. You can access it anytime through the link provided.</p>
-            <p>🔗 <a href="{{ capsule.url }}" class="btn">View Your Capsule</a></p>
+            <p> Your capsule is ready to view! Here's your direct access link:</p>
+            <p style="text-align: center;">
+                <a href="https://timecapsule-r26e.onrender.com/capsule/{{ capsule.id }}/" 
+                   style="display: inline-block; 
+                          background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+                          color: white; 
+                          padding: 12px 24px; 
+                          text-decoration: none; 
+                          border-radius: 25px; 
+                          margin: 20px 0;
+                          font-weight: 500;">
+                    View Your Capsule
+                </a>
             <p>Thank you for using TimeCapsule Network to safeguard your memories.</p>
         </div>
 

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ capsule.title }} - TimeCapsule</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'capsule/styles.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" href="{% static 'Media/logo1.png' %}">
+</head>
+<body>
+    <canvas id="bg"></canvas>
+    
+    <div class="capsule-modal active" style="display: flex; background: none;  background: rgb(0 0 0 / 0%);backdrop-filter: blur(0px);">
+        <div class="modal-content">
+            <span class="modal-close" onclick="window.location.href='/'">&times;</span>
+            
+            <div class="modal-header">
+                <span class="modal-anonymous">{{ capsule.title }}</span>
+                <div class="modal-dates">
+                    <span class="modal-unlock">{{ capsule.unlock_at }}</span>
+                    <span class="modal-created">{{ capsule.created_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                {% if capsule.is_locked %}
+                    <div class="modal-lock-overlay">
+                        <i class="fas fa-lock"></i>
+                        <p>This capsule is locked until</p>
+                        <p class="unlock-date">{{ capsule.unlock_at }}</p>
+                    </div>
+                {% else %}
+                    <p class="modal-message">{{ capsule.msg }}</p>
+                    {% if capsule.has_attachment %}
+                        <div class="modal-media">
+                            <button class="view-media-btn" onclick="showMediaPreview('{{ capsule.upload_url }}')">
+                                <i class="fas fa-eye"></i> View Attachment
+                            </button>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- Updated Create Button -->
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="cta-button" onclick="window.location.href='/create/'" 
+                    style="background: linear-gradient(90deg, #00d2ff, #3a7bd5); 
+                           border: none; 
+                           border-radius: 25px; 
+                           padding: 1rem 2.5rem; 
+                           font-size: 1.2rem; 
+                           min-width: 250px;
+                           cursor: pointer;
+                           transition: all 0.3s ease;">
+                    Create Another Capsule
+                </button>
+            </div>
+            
+
+           
+
+            <p style="text-align: center;">
+                <a href="https://timecapsule-r26e.onrender.com/capsule/{{ capsule.id }}/" 
+                   style="display: inline-block; 
+                          background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+                          color: white; 
+                          padding: 12px 24px; 
+                          text-decoration: none; 
+                          border-radius: 25px; 
+                          margin: 20px 0;
+                          font-weight: 500;">
+                    View Your Capsule
+                </a>
+            </p>
+
+
+
+
+        </div>
+    </div>
+
+    <!-- Media Preview Modal -->
+    <div class="media-preview-modal">
+        <div class="media-preview-content">
+            <span class="media-close">&times;</span>
+            <div class="media-container"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{% static 'capsule/script.js' %}"></script>
+    
+    <!-- Add this script for media preview -->
+    <script>
+    function showMediaPreview(url) {
+        const mediaModal = document.querySelector('.media-preview-modal');
+        const mediaContainer = mediaModal.querySelector('.media-container');
+        mediaContainer.innerHTML = '';
+        
+        // Determine file type
+        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+        const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+        
+        if (isImage) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = 'Media Preview';
+            mediaContainer.appendChild(img);
+        } else if (isVideo) {
+            const video = document.createElement('video');
+            video.src = url;
+            video.controls = true;
+            video.autoplay = true;
+            mediaContainer.appendChild(video);
+        } else {
+            const downloadBtn = document.createElement('a');
+            downloadBtn.href = url;
+            downloadBtn.className = 'download-btn';
+            downloadBtn.download = '';
+            downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download File';
+            mediaContainer.appendChild(downloadBtn);
+        }
+        
+        mediaModal.style.display = 'flex';
+        
+        // Close button handler
+        mediaModal.querySelector('.media-close').onclick = () => {
+            mediaModal.style.display = 'none';
+            mediaContainer.innerHTML = '';
+        };
+        
+        // Click outside to close
+        mediaModal.onclick = (e) => {
+            if (e.target === mediaModal) {
+                mediaModal.style.display = 'none';
+                mediaContainer.innerHTML = '';
+            }
+        };
+    }
+    </script>
+</body>
+</html>
