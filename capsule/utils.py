@@ -11,14 +11,23 @@ def send_capsule_created_email(capsule):
         unlock_date = capsule.unlock_at.strftime('%Y-%m-%d') if hasattr(capsule.unlock_at, 'strftime') else capsule.unlock_at
 
         if created_date == unlock_date:
-            subject = f'TimeCapsule: Your Capsule "{capsule.title}#{capsule.id}" Has Been Posted!'
+            subject = f'TimeCapsule: Your Capsule "{capsule.title} (TC-{capsule.id:04d})" Has Been Posted!'
             template_name = 'capsule/emails/capsule_post.html'
         else:
-            subject = f'TimeCapsule: Your Capsule "{capsule.title}#{capsule.id}" Has Been Sealed!'
+            subject = f'TimeCapsule: Your Capsule "{capsule.title} (TC-{capsule.id:04d})" Has Been Sealed!'
             template_name = 'capsule/emails/capsule_sealed.html'
         
         context = {
-            'capsule': capsule
+            'capsule': {
+                'id': capsule.id,
+                'title': capsule.title,
+                'capsule_id': f"TC-{capsule.id:04d}",  # Add formatted ID
+                'created_at': capsule.created_at,
+                'unlock_at': capsule.unlock_at,
+                'msg': capsule.msg,
+                'upload': capsule.upload,
+                'email': capsule.email
+            }
         }
 
         html_message = render_to_string(template_name, context)
@@ -39,10 +48,19 @@ def send_capsule_created_email(capsule):
 def send_capsule_unlock_email(capsule):
     """Send email when capsule is unlocked"""
     try:
-        subject = f'TimeCapsule: Your Capsule "{capsule.title}#{capsule.id}" Is Now Unlocked!'
+        subject = f'TimeCapsule: Your Capsule "{capsule.title} (TC-{capsule.id:04d})" Is Now Unlocked!'
 
         context = {
-            'capsule': capsule
+            'capsule': {
+                'id': capsule.id,
+                'title': capsule.title,
+                'capsule_id': f"TC-{capsule.id:04d}",  # Add formatted ID
+                'created_at': capsule.created_at,
+                'unlock_at': capsule.unlock_at,
+                'msg': capsule.msg,
+                'upload': capsule.upload,
+                'email': capsule.email
+            }
         }
 
         html_message = render_to_string('capsule/emails/capsule_unlocked.html', context)

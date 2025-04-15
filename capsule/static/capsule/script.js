@@ -215,6 +215,7 @@ function handleCardClick(e) {
 
     // Get card data
     const title = card.querySelector('.capsule-anonymous').textContent;
+    const capsuleId = card.querySelector('.capsule-id').textContent; 
     const unlock = card.querySelector('.capsule-date').textContent;
     const created = card.querySelector('.capsule-created').textContent;
     const message = card.querySelector('.capsule-message').dataset.fullMessage;
@@ -222,6 +223,7 @@ function handleCardClick(e) {
 
     // Set modal content
     modal.querySelector('.modal-anonymous').textContent = title;
+    modal.querySelector('.capsule-id').textContent = capsuleId;
     modal.querySelector('.modal-unlock').textContent = unlock;
     modal.querySelector('.modal-created').textContent = created;
     modal.querySelector('.modal-message').textContent = message;
@@ -271,8 +273,8 @@ function handleCardClick(e) {
         lockOverlay.className = 'modal-lock-overlay';
         lockOverlay.innerHTML = `
             <i class="fas fa-lock"></i>
-            <p>This capsule is locked until</p>
-            <p class="unlock-date">${new Date(unlockDate).toLocaleDateString()}</p>
+            <span>This capsule is locked until</span>
+            <span class="unlock-date">${new Date(unlockDate).toLocaleDateString()}</span>
         `;
         modalContent.appendChild(lockOverlay);
     } else {

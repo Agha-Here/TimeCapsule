@@ -20,7 +20,10 @@
             <span class="modal-close" onclick="window.location.href='/'">&times;</span>
             
             <div class="modal-header">
-                <span class="modal-anonymous">{{ capsule.title }}</span>
+                <div class="capsule-heading">
+                    <span class="modal-anonymous">{{ capsule.title }}</span>
+                    <span class="capsule-id">{{ capsule.capsule_id }}</span>
+                </div>
                 <div class="modal-dates">
                     <span class="modal-unlock">{{ capsule.unlock_at }}</span>
                     <span class="modal-created">{{ capsule.created_at|date:"M d, Y" }}</span>
@@ -30,9 +33,9 @@
             <div class="modal-body">
                 {% if capsule.is_locked %}
                     <div class="modal-lock-overlay">
-                        <i class="fas fa-lock"></i>
-                        <p>This capsule is locked until</p>
-                        <p class="unlock-date">{{ capsule.unlock_at }}</p>
+                        <i class="fas fa-lock"> </i>
+                        <span> This capsule is locked until  </span>
+                        <span class="unlock-date">  {{ capsule.unlock_at }}</span>
                     </div>
                 {% else %}
                     <p class="modal-message">{{ capsule.msg }}</p>

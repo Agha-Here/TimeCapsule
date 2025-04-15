@@ -11,6 +11,8 @@ from django.core.files.uploadedfile import UploadedFile
 import cloudinary
 import cloudinary.uploader
 from django.core.cache import cache
+from django.http import HttpResponse
+from django.core.management import call_command
 
 def index(request):
     return render(request, 'capsule/index.html')
@@ -52,7 +54,8 @@ def create_capsule(request):
         # Convert dates for comparison (ensure both are date objects)
         unlock_date = capsule.unlock_at
         created_date = capsule.created_at.date()
-        
+        capsule_id_formatted = f"TC-{capsule.id:04d}"
+
         # Default to locked
         is_locked = True
 
@@ -63,7 +66,7 @@ def create_capsule(request):
         filtered_capsule = {
             'id': capsule.id,
             'title': capsule.title or 'Anonymous',
-            'capsule_id': f"TC-{capsule.id:04d}",  # TC = Time Capsule
+            'capsule_id': capsule_id_formatted,  
             'msg': capsule.msg if not is_locked else "🔒 That's cheating bruh",
             'unlock_at': capsule.unlock_at,
             'created_at': capsule.created_at,
@@ -186,6 +189,7 @@ def search_capsules(request):
 def view_capsule(request, capsule_id):
     capsule = get_object_or_404(Capsule, id=capsule_id)
     today = timezone.now().date()
+    capsule_id_formatted = f"TC-{capsule.id:04d}"
     
     is_locked = True
     if today >= capsule.unlock_at or capsule.unlock_at == capsule.created_at.date():
@@ -195,7 +199,7 @@ def view_capsule(request, capsule_id):
         'capsule': {
             'id': capsule.id,
             'title': capsule.title or 'Anonymous',
-            'capsule_id': f"TC-{capsule.id:04d}",
+            'capsule_id': capsule_id_formatted, 
             'msg': capsule.msg if not is_locked else "🔒 That's cheating bruh",
             'unlock_at': capsule.unlock_at,
             'created_at': capsule.created_at,
@@ -204,5 +208,11 @@ def view_capsule(request, capsule_id):
             'is_locked': is_locked
         }
     }
-    
     return render(request, 'capsule/view_capsule.html', context)
+
+def cron_send_unlock_emails(request):
+    try:
+        call_command('send_unlock_emails')
+        return HttpResponse("Unlock emails sent successfully", status=200)
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
