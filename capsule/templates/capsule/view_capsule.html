@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="base-url" content="{{ request.scheme }}://{{ request.get_host }}">
     <title>{{ capsule.title }} - TimeCapsule</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'capsule/styles.css' %}">
@@ -55,9 +56,9 @@
                     style="background: linear-gradient(90deg, #00d2ff, #3a7bd5); 
                            border: none; 
                            border-radius: 25px; 
-                           padding: 1rem 2.5rem; 
-                           font-size: 1.2rem; 
-                           min-width: 250px;
+                           padding: 0.8rem 2rem; 
+                           font-size: 1rem; 
+                           min-width: 200px;
                            cursor: pointer;
                            transition: all 0.3s ease;">
                     Create Another Capsule

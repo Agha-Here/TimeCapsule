@@ -208,6 +208,25 @@ function handleCardClick(e) {
     const modal = document.querySelector('.capsule-modal');
     const unlockDate = card.dataset.unlockDate;
     
+    // Get the capsule ID from the like button's data attribute
+    const cardCapsuleId = card.querySelector('.like-button').dataset.capsuleId;
+
+    // Set up share button click handler
+    const shareBtn = modal.querySelector('.share-btn');
+    shareBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent modal from closing
+        handleShare(capsuleId);
+    });
+    
+     // Update like button and count
+     const cardLikeButton = card.querySelector('.like-button');
+     const modalLikeButton = modal.querySelector('.modal-like-btn');
+     const cardLikeCount = card.querySelector('.like-count');
+     
+    modalLikeButton.dataset.capsuleId = cardCapsuleId;
+     modalLikeButton.classList.toggle('liked', cardLikeButton.classList.contains('liked'));
+     modal.querySelector('.like-count').textContent = cardLikeCount.textContent;
+     
     if (!modal) {
         console.error('Modal element not found');
         return;
@@ -394,6 +413,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+
+    document.querySelectorAll('.like-button').forEach(button => {
+        if (button.dataset.liked === 'True') {
+            button.classList.add('liked');
+        }
+        
+        button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleLike(button);
+        });
+    });
 
     // Form handling
     if (document.querySelector('.capsule-form')) {
@@ -746,4 +777,103 @@ function showSuccessState(modal) {
 window.addEventListener('resize', updateCanvasSize);
 window.addEventListener('scroll', updateCanvasSize);
 
+// Like functionality
+function toggleLike(button) {
+    const capsuleId = button.dataset.capsuleId;
+    
+    fetch(`/like/${capsuleId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update all instances of this capsule's like button and count
+            const likeButtons = document.querySelectorAll(`.like-button[data-capsule-id="${capsuleId}"]`);
+            likeButtons.forEach(btn => {
+                btn.classList.toggle('liked', data.is_liked);
+                const container = btn.closest('.like-container');
+                if (container) {
+                    container.querySelector('.like-count').textContent = data.likes;
+                }
+            });
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 
+// Function to show toast notification
+function showToast(message, duration = 2000) {
+    // Remove existing toast if any
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    // Create and show new toast
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // Show toast
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Remove toast after duration
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// Share functionality
+function handleShare(capsuleId) {
+    const numericId = capsuleId.replace(/\D/g, '');
+    const baseUrl = document.querySelector('meta[name="base-url"]').content;
+    const url = `${baseUrl}/capsule/${numericId}/`;
+    
+    // Show share modal
+    const shareModal = document.querySelector('.share-modal');
+    const shareUrl = shareModal.querySelector('#share-url');
+    shareUrl.value = url;
+    
+    // Show the modal
+    shareModal.style.display = 'flex';
+    
+    // Copy button handler with fixed functionality
+    const copyBtn = shareModal.querySelector('.copy-btn');
+    copyBtn.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(url);
+            showToast('Link copied to clipboard!');
+        } catch (err) {
+            // Fallback for older browsers
+            shareUrl.select();
+            document.execCommand('copy');
+            showToast('Link copied to clipboard!');
+        }
+    });
+    
+    // WhatsApp share handler
+    const whatsappBtn = shareModal.querySelector('#whatsapp-share');
+    whatsappBtn.onclick = () => {
+        const text = `Check out this time capsule!`;
+        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`;
+        window.open(whatsappUrl, '_blank');
+    };
+    
+    // Close button handler
+    const closeBtn = shareModal.querySelector('.share-close');
+    closeBtn.onclick = () => {
+        shareModal.style.display = 'none';
+    };
+    
+    // Click outside to close
+    shareModal.onclick = (e) => {
+        if (e.target === shareModal) {
+            shareModal.style.display = 'none';
+        }
+    };
+}

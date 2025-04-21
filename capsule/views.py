@@ -35,6 +35,39 @@ def check_title(request):
     
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+def toggle_like(request, capsule_id):
+    if request.method == 'POST':
+        capsule = get_object_or_404(Capsule, id=capsule_id)
+        
+        # Initialize liked_capsules in session if it doesn't exist
+        if 'liked_capsules' not in request.session:
+            request.session['liked_capsules'] = []
+        
+        liked_capsules = request.session['liked_capsules']
+        
+        # Toggle like status
+        if capsule_id in liked_capsules:
+            liked_capsules.remove(capsule_id)
+            capsule.likes = max(0, capsule.likes - 1)  # Prevent negative likes
+            is_liked = False
+        else:
+            liked_capsules.append(capsule_id)
+            capsule.likes += 1
+            is_liked = True
+        
+        # Save changes
+        request.session['liked_capsules'] = liked_capsules
+        request.session.modified = True
+        capsule.save()
+        
+        return JsonResponse({
+            'success': True,
+            'likes': capsule.likes,
+            'is_liked': is_liked
+        })
+    
+    return JsonResponse({'success': False}, status=400)
+
 MAX_UPLOAD_SIZE = 104857600  # 100MB in bytes (100 * 1024 * 1024)
 
 def create_capsule(request):
@@ -74,7 +107,9 @@ def create_capsule(request):
             'upload_url': capsule.upload if (capsule.upload and not is_locked) else '',
             'is_locked': is_locked,
             'search_preview': capsule.msg[:100] if not is_locked else None,
-            'data_message': capsule.msg if not is_locked else ''
+            'data_message': capsule.msg if not is_locked else '',
+            'likes': capsule.likes  # Add this line
+
         }
         filtered_capsules.append(filtered_capsule)
 
