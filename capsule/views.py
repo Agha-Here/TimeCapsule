@@ -13,6 +13,12 @@ import cloudinary.uploader
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.core.management import call_command
+import qrcode
+import base64
+from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont
+import os
+
 
 def index(request):
     return render(request, 'capsule/index.html')
@@ -240,7 +246,8 @@ def view_capsule(request, capsule_id):
             'created_at': capsule.created_at,
             'has_attachment': bool(capsule.upload),
             'upload_url': capsule.upload if (capsule.upload and not is_locked) else '',
-            'is_locked': is_locked
+            'is_locked': is_locked,
+            'likes': capsule.likes
         }
     }
     return render(request, 'capsule/view_capsule.html', context)
@@ -251,3 +258,100 @@ def cron_send_unlock_emails(request):
         return HttpResponse("Unlock emails sent successfully", status=200)
     except Exception as e:
         return HttpResponse(f"Error: {str(e)}", status=500)
+    
+def generate_qr_code(request, capsule_id):
+    capsule = get_object_or_404(Capsule, id=capsule_id)
+    base_url = f"{request.scheme}://{request.get_host()}"
+    capsule_url = f"{base_url}/capsule/{capsule_id}/"
+    
+    # Get title, use "Anonymous" if None
+    title = capsule.title or "Anonymous"
+    qr_code = generate_qr(capsule_url, title)
+    return JsonResponse({'qr_code': qr_code})
+
+def generate_qr(url, title):
+    # Create QR code instance with higher error correction
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,  # Higher error correction for logo
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+
+    # Create QR code image with white background
+    qr_image = qr.make_image(fill_color="#00d2ff", back_color="white")
+    qr_image = qr_image.get_image()
+    
+    # Create a new image with padding for text
+    width = qr_image.width
+    height = qr_image.height + 80
+    new_image = Image.new('RGB', (width, height), 'white')
+    
+    # Paste QR code in the middle
+    new_image.paste(qr_image, (0, 40))
+    
+    # Open and resize logo
+    logo_path = os.path.join('capsule', 'static', 'Media', 'logo1.png')
+    if os.path.exists(logo_path):
+        logo = Image.open(logo_path)
+        
+        # Calculate logo size (about 20% of QR code)
+        logo_size = int(width * 0.2)
+        
+        # Create a white background square for logo (slightly larger than logo)
+        padding = int(logo_size * 0.05)  # 20% padding around logo
+        bg_size = logo_size + (padding * 2)
+        logo_bg = Image.new('RGB', (bg_size, bg_size), 'white')
+        
+        # Resize logo
+        logo = logo.resize((logo_size, logo_size))
+        
+        # Calculate positions
+        logo_pos_x = (width - bg_size) // 2
+        logo_pos_y = ((height - 80 - bg_size) // 2) + 40
+        
+        # First paste the white background
+        new_image.paste(logo_bg, (logo_pos_x, logo_pos_y))
+        
+        # Then paste the logo in the center of white background
+        if logo.mode == 'RGBA':
+            new_image.paste(logo, 
+                          (logo_pos_x + padding, logo_pos_y + padding), 
+                          logo)
+        else:
+            new_image.paste(logo, 
+                          (logo_pos_x + padding, logo_pos_y + padding))
+    
+    # Add text
+    draw = ImageDraw.Draw(new_image)
+    
+    try:
+        font_path = "C:\\Windows\\Fonts\\Arial.ttf"
+        title_font = ImageFont.truetype(font_path, 20)
+        bottom_font = ImageFont.truetype(font_path, 16)
+    except:
+        title_font = ImageFont.load_default()
+        bottom_font = ImageFont.load_default()
+
+    # Add title text at top
+    title_text = "The Time Capsule Network"
+    title_bbox = draw.textbbox((0, 0), title_text, font=title_font)
+    title_width = title_bbox[2] - title_bbox[0]
+    title_x = (width - title_width) // 2
+    draw.text((title_x, 10), title_text, fill="#00d2ff", font=title_font)
+    
+    # Add bottom text with capsule title
+    bottom_text = f"Scan to view my Capsule: {title}"
+    bottom_bbox = draw.textbbox((0, 0), bottom_text, font=bottom_font)
+    bottom_width = bottom_bbox[2] - bottom_bbox[0]
+    bottom_x = (width - bottom_width) // 2
+    draw.text((bottom_x, height - 30), bottom_text, fill="#00d2ff", font=bottom_font)
+    
+    # Save to buffer
+    buffer = BytesIO()
+    new_image.save(buffer, format='PNG')
+    image_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    return f'data:image/png;base64,{image_base64}'

@@ -15,8 +15,8 @@
 </head>
 <body>
     <canvas id="bg"></canvas>
-    
-    <div class="capsule-modal active" style="display: flex; background: none;  background: rgb(0 0 0 / 0%);backdrop-filter: blur(0px);">
+
+    <div class="capsule-modal active" style="display: flex;background:none; background: rgb(0 0 0 / 0%); backdrop-filter: blur(0px);">
         <div class="modal-content">
             <span class="modal-close" onclick="window.location.href='/'">&times;</span>
             
@@ -34,24 +34,39 @@
             <div class="modal-body">
                 {% if capsule.is_locked %}
                     <div class="modal-lock-overlay">
-                        <i class="fas fa-lock"> </i>
+                        <i class="fas fa-lock"></i>
                         <span> This capsule is locked until  </span>
                         <span class="unlock-date">  {{ capsule.unlock_at }}</span>
                     </div>
                 {% else %}
                     <p class="modal-message">{{ capsule.msg }}</p>
-                    {% if capsule.has_attachment %}
+                    <div class="modal-actions">
+                        <div class="like-container">
+                            <button class="like-button" 
+                                    data-capsule-id="{{ capsule.id }}"
+                                    data-liked="{% if capsule.id in request.session.liked_capsules %}True{% else %}False{% endif %}">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <span class="like-count">{{ capsule.likes }}</span>
+                        </div>
+                    
+                        {% if capsule.has_attachment %}
                         <div class="modal-media">
-                            <button class="view-media-btn" onclick="showMediaPreview('{{ capsule.upload_url }}')">
+                            <button class="view-media-btn" data-url="{{ capsule.upload_url }}">
                                 <i class="fas fa-eye"></i> View Attachment
                             </button>
                         </div>
-                    {% endif %}
+                        {% endif %}
+                    
+                        <button class="share-btn">
+                            <i class="fas fa-share-alt"></i> Share
+                        </button>
+                    </div>
                 {% endif %}
             </div>
 
-            <!-- Updated Create Button -->
-            <div style="text-align: center; margin-top: 20px;">
+            <!-- Create Button -->
+            <div style="text-align: center; margin-top: 8px;">
                 <button class="cta-button" onclick="window.location.href='/create/'" 
                     style="background: linear-gradient(90deg, #00d2ff, #3a7bd5); 
                            border: none; 
@@ -60,15 +75,12 @@
                            font-size: 1rem; 
                            min-width: 200px;
                            cursor: pointer;
-                           transition: all 0.3s ease;">
+                           transition: all 0.3s ease;
+                           margin-top:0px;
+                           margin-bottom:0px;">
                     Create Another Capsule
                 </button>
             </div>
-            </p>
-
-
-
-
         </div>
     </div>
 
@@ -80,57 +92,155 @@
         </div>
     </div>
 
+    <!-- Share Modal -->
+    <div class="share-modal">
+        <div class="share-content">
+            <span class="share-close">&times;</span>
+            <h3>Share Capsule</h3>
+            
+            <div class="share-section">
+                <div class="copy-link">
+                    <input type="text" id="share-url" readonly>
+                    <button class="copy-btn" title="Copy link">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="share-section-option">
+                <button class="social-btn whatsapp" id="whatsapp-share">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>WhatsApp</span>
+                </button>
+                <button class="social-btn qr-btn" id="show-qr">
+                    <i class="fas fa-qrcode"></i>
+                    <span>QR Code</span>
+                </button>
+            </div>
+
+            <div class="qr-section" style="display: none;">
+                <div class="qr-container">
+                    <img id="qr-code" src="" alt="QR Code">
+                    <button class="download-btn" id="download-qr">
+                        <i class="fas fa-download"></i>
+                        Download QR Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% csrf_token %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="{% static 'capsule/script.js' %}"></script>
-    
-    <!-- Add this script for media preview -->
+
     <script>
-    function showMediaPreview(url) {
-        const mediaModal = document.querySelector('.media-preview-modal');
-        const mediaContainer = mediaModal.querySelector('.media-container');
-        mediaContainer.innerHTML = '';
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize like button
+            const likeBtn = document.querySelector('.like-button');
+            if (likeBtn) {
+                // Set initial state
+                if (likeBtn.dataset.liked === 'True') {
+                    likeBtn.classList.add('liked');
+                }
+                
+                // Add click handler with optimistic update
+                likeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const capsuleId = likeBtn.dataset.capsuleId;
+                    const isCurrentlyLiked = likeBtn.classList.contains('liked');
+                    
+                    // Immediately update UI
+                    likeBtn.classList.toggle('liked');
+                    const countElement = likeBtn.closest('.like-container').querySelector('.like-count');
+                    let currentCount = parseInt(countElement.textContent);
+                    countElement.textContent = isCurrentlyLiked ? currentCount - 1 : currentCount + 1;
+                    
+                    // Then send request to server
+                    fetch(`/like/${capsuleId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            // Only revert if server request failed
+                            likeBtn.classList.toggle('liked');
+                            countElement.textContent = currentCount;
+                        }
+                    })
+                    .catch(() => {
+                        // Revert on error
+                        likeBtn.classList.toggle('liked');
+                        countElement.textContent = currentCount;
+                    });
+                });
+            }        
         
-        // Determine file type
-        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-        const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
-        
-        if (isImage) {
-            const img = document.createElement('img');
-            img.src = url;
-            img.alt = 'Media Preview';
-            mediaContainer.appendChild(img);
-        } else if (isVideo) {
-            const video = document.createElement('video');
-            video.src = url;
-            video.controls = true;
-            video.autoplay = true;
-            mediaContainer.appendChild(video);
-        } else {
-            const downloadBtn = document.createElement('a');
-            downloadBtn.href = url;
-            downloadBtn.className = 'download-btn';
-            downloadBtn.download = '';
-            downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download File';
-            mediaContainer.appendChild(downloadBtn);
-        }
-        
-        mediaModal.style.display = 'flex';
-        
-        // Close button handler
-        mediaModal.querySelector('.media-close').onclick = () => {
-            mediaModal.style.display = 'none';
+            // Initialize share button
+            const shareBtn = document.querySelector('.share-btn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', () => {
+                    handleShare('{{ capsule.id }}');
+                });
+            }
+
+        // Media preview handler
+        function showMediaPreview(url) {
+            const mediaModal = document.querySelector('.media-preview-modal');
+            const mediaContainer = mediaModal.querySelector('.media-container');
             mediaContainer.innerHTML = '';
-        };
-        
-        // Click outside to close
-        mediaModal.onclick = (e) => {
-            if (e.target === mediaModal) {
+            
+            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+            const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+            
+            if (isImage) {
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = 'Media Preview';
+                mediaContainer.appendChild(img);
+            } else if (isVideo) {
+                const video = document.createElement('video');
+                video.src = url;
+                video.controls = true;
+                video.autoplay = true;
+                mediaContainer.appendChild(video);
+            } else {
+                const downloadBtn = document.createElement('a');
+                downloadBtn.href = url;
+                downloadBtn.className = 'download-btn';
+                downloadBtn.download = '';
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download File';
+                mediaContainer.appendChild(downloadBtn);
+            }
+            
+            mediaModal.style.display = 'flex';
+            
+            // Close handlers
+            const closeBtn = mediaModal.querySelector('.media-close');
+            closeBtn.onclick = () => {
                 mediaModal.style.display = 'none';
                 mediaContainer.innerHTML = '';
-            }
-        };
-    }
+            };
+            
+            mediaModal.onclick = (e) => {
+                if (e.target === mediaModal) {
+                    mediaModal.style.display = 'none';
+                    mediaContainer.innerHTML = '';
+                }
+            };
+        }
+
+        // Initialize media preview buttons
+        document.querySelectorAll('.view-media-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                showMediaPreview(btn.dataset.url);
+            });
+        });
+    });
     </script>
 </body>
 </html>

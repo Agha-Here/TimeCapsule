@@ -780,7 +780,12 @@ window.addEventListener('scroll', updateCanvasSize);
 // Like functionality
 function toggleLike(button) {
     const capsuleId = button.dataset.capsuleId;
+    const isCurrentlyLiked = button.classList.contains('liked');
     
+    // Immediately update UI
+    updateLikeUI(capsuleId, !isCurrentlyLiked);
+    
+    // Send request to server
     fetch(`/like/${capsuleId}/`, {
         method: 'POST',
         headers: {
@@ -789,19 +794,32 @@ function toggleLike(button) {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            // Update all instances of this capsule's like button and count
-            const likeButtons = document.querySelectorAll(`.like-button[data-capsule-id="${capsuleId}"]`);
-            likeButtons.forEach(btn => {
-                btn.classList.toggle('liked', data.is_liked);
-                const container = btn.closest('.like-container');
-                if (container) {
-                    container.querySelector('.like-count').textContent = data.likes;
-                }
-            });
+        if (!data.success) {
+            // Only revert if server request failed
+            updateLikeUI(capsuleId, isCurrentlyLiked);
         }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(() => {
+        // Revert on error
+        updateLikeUI(capsuleId, isCurrentlyLiked);
+    });
+}
+// Helper function to update like UI
+function updateLikeUI(capsuleId, isLiked) {
+    const likeButtons = document.querySelectorAll(`.like-button[data-capsule-id="${capsuleId}"]`);
+    
+    likeButtons.forEach(btn => {
+        // Update like button state
+        btn.classList.toggle('liked', isLiked);
+        
+        // Update count
+        const container = btn.closest('.like-container');
+        if (container) {
+            const countElement = container.querySelector('.like-count');
+            let currentCount = parseInt(countElement.textContent);
+            countElement.textContent = isLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+        }
+    });
 }
 
 // Function to show toast notification
@@ -842,14 +860,13 @@ function handleShare(capsuleId) {
     // Show the modal
     shareModal.style.display = 'flex';
     
-    // Copy button handler with fixed functionality
+    // Copy button handler
     const copyBtn = shareModal.querySelector('.copy-btn');
     copyBtn.addEventListener('click', async () => {
         try {
             await navigator.clipboard.writeText(url);
             showToast('Link copied to clipboard!');
         } catch (err) {
-            // Fallback for older browsers
             shareUrl.select();
             document.execCommand('copy');
             showToast('Link copied to clipboard!');
@@ -863,17 +880,46 @@ function handleShare(capsuleId) {
         const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`;
         window.open(whatsappUrl, '_blank');
     };
+
+    // QR Code handler
+    const qrBtn = shareModal.querySelector('#show-qr');
+    const qrSection = shareModal.querySelector('.qr-section');
+    const qrImage = shareModal.querySelector('#qr-code');
+    const downloadBtn = shareModal.querySelector('#download-qr');
+    
+    qrBtn.onclick = async () => {
+        const qrData = await fetch(`/capsule/${numericId}/qr/`)
+            .then(response => response.json())
+            .then(data => data.qr_code);
+        
+        qrImage.src = qrData;
+        qrSection.style.display = 'block';
+        showToast('QR Code generated!');
+    };
+    
+    // Download QR code handler
+    downloadBtn.onclick = () => {
+        const link = document.createElement('a');
+        link.download = `timecapsule-${numericId}.png`;
+        link.href = qrImage.src;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('QR Code downloaded!');
+    };
     
     // Close button handler
     const closeBtn = shareModal.querySelector('.share-close');
     closeBtn.onclick = () => {
         shareModal.style.display = 'none';
+        qrSection.style.display = 'none'; // Hide QR section when closing
     };
     
     // Click outside to close
     shareModal.onclick = (e) => {
         if (e.target === shareModal) {
             shareModal.style.display = 'none';
+            qrSection.style.display = 'none'; // Hide QR section when closing
         }
     };
 }

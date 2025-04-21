@@ -194,16 +194,30 @@
                 </div>
             </div>
     
-            <!-- WhatsApp Share Button -->
-            <div class="share-section">
+            <!-- Share Buttons -->
+            <div class="share-section-option">
                 <button class="social-btn whatsapp" id="whatsapp-share">
                     <i class="fab fa-whatsapp"></i>
                     <span>WhatsApp</span>
                 </button>
+                <button class="social-btn qr-btn" id="show-qr">
+                    <i class="fas fa-qrcode"></i>
+                    <span>QR Code</span>
+                </button>
+            </div>
+    
+            <!-- QR Code Section (Initially Hidden) -->
+            <div class="qr-section" style="display: none;">
+                <div class="qr-container">
+                    <img id="qr-code" src="" alt="QR Code">
+                    <button class="download-btn" id="download-qr">
+                        <i class="fas fa-download"></i>
+                        Download QR Code
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

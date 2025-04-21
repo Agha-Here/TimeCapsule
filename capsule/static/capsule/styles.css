@@ -1162,8 +1162,14 @@ input[type="text"]:focus {
   margin-bottom: 1.5rem;
   align-items: center;
   justify-content: center;
-  
 }
+.share-section-option {
+  margin-bottom: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
 
 .copy-link {
   display: flex;
@@ -1196,7 +1202,7 @@ input[type="text"]:focus {
 }
 
 .social-btn.whatsapp {
-  width: 50%;
+  width: 45%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1209,4 +1215,77 @@ input[type="text"]:focus {
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.9rem;
+  margin-right: 0.1rem;
+}
+.qr-section {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+#qr-code {
+  width: 200px;
+  height: 200px;
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.qr-text {
+  color: #a8a8a8;
+  font-size: 0.9rem;
+}
+
+.social-btn.qr-btn {
+  background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+  width: 45%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  margin-left: 1rem;
+}
+
+.download-btn {
+  background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+#qr-code {
+  width: 250px;
+  height: auto;
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
