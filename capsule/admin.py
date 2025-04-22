@@ -3,7 +3,7 @@ from .models import Capsule
 
 @admin.register(Capsule)
 class CapsuleAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'email', 'created_at', 'unlock_at', 'has_attachment')
+    list_display = ('id', 'title', 'email', 'unlock_at', 'has_attachment','likes')
     list_filter = ('unlock_at', 'created_at')
     search_fields = ('title', 'email', 'msg', 'id') 
     ordering = ('-created_at',)
@@ -18,7 +18,7 @@ class CapsuleAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Capsule Details', {
-            'fields': ('title', 'email')
+            'fields': ('id','title', 'email','likes')
         }),
         ('Content', {
             'fields': ('msg', 'upload'),
@@ -28,11 +28,7 @@ class CapsuleAdmin(admin.ModelAdmin):
             'fields': ('unlock_at', 'created_at'),
             'description': 'When the capsule was created and when it will unlock'
         }),
-        ('System Info', {
-            'fields': ('id',),
-            'description': 'System-generated information',
-            'classes': ('collapse',)
-        })
+        
     )
 
     def get_readonly_fields(self, request, obj=None):

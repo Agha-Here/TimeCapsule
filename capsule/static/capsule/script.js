@@ -426,6 +426,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    const sortSelect = document.getElementById('capsule-sort');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', (e) => {
+            sortCapsules(e.target.value);
+        });
+    }
+
     // Form handling
     if (document.querySelector('.capsule-form')) {
         const form = document.querySelector('.capsule-form');
@@ -922,4 +929,55 @@ function handleShare(capsuleId) {
             qrSection.style.display = 'none'; // Hide QR section when closing
         }
     };
+}
+
+// Add this sorting function
+function sortCapsules(sortBy) {
+    const container = document.querySelector('.public-capsules-container');
+    const filterControls = document.querySelector('.filter-controls');
+    const cards = Array.from(container.getElementsByClassName('capsule-card'));
+    
+    cards.sort((a, b) => {
+        switch(sortBy) {
+            case 'newest':
+                return new Date(b.querySelector('.capsule-created').textContent) - 
+                       new Date(a.querySelector('.capsule-created').textContent);
+            
+            case 'oldest':
+                return new Date(a.querySelector('.capsule-created').textContent) - 
+                       new Date(b.querySelector('.capsule-created').textContent);
+            
+            case 'most-liked':
+                return parseInt(b.querySelector('.like-count').textContent) - 
+                       parseInt(a.querySelector('.like-count').textContent);
+            
+            case 'recently-unlocked':
+                const aDate = new Date(a.querySelector('.capsule-date').textContent);
+                const bDate = new Date(b.querySelector('.capsule-date').textContent);
+                const now = new Date();
+                if (aDate > now && bDate > now) return bDate - aDate;
+                if (aDate > now) return 1;
+                if (bDate > now) return -1;
+                return bDate - aDate;
+            
+            default:
+                return 0;
+        }
+    });
+    
+    // Clear only the capsule cards, preserve filter controls
+    while (container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
+    
+    // Re-append the filter controls first
+    if (filterControls) {
+        container.appendChild(filterControls);
+    }
+    
+    // Append sorted cards
+    cards.forEach(card => container.appendChild(card));
+    
+    // Reattach event listeners
+    attachCardListeners();
 }

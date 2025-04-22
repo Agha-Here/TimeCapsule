@@ -21,7 +21,7 @@
         <!-- Left Section - Form -->
         <div class="section left-section">
             <h1 class="title">Create Your Capsule</h1>
-            <p class="subtitle">Seal your memories for the future</p>
+            <p class="subtitle">Drop a message into tomorrow.</p>
             {% if success %}
             <p style="color: #00d2ff;">Capsule sealed successfully!</p>
             {% elif error %}
@@ -62,8 +62,18 @@
         <div class="section right-section">
             <h2 class="section-title">Time Capsules</h2>
             <div class="public-capsules-container">
-                <div class="search-container">
-                    <input type="text" id="capsule-search" placeholder="Search capsules by title, ID or content...">
+                <div class="filter-controls">
+                    <div class="search-container">
+                        <input type="text" id="capsule-search" placeholder="Search capsules by title, ID or content...">
+                    </div>
+                    <div class="sort-container">
+                        <select class="sort-select" id="capsule-sort" aria-label="Sort capsules">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="most-liked">Most Liked</option>
+                            <option value="recently-unlocked">Recently Unlocked</option>
+                        </select>
+                    </div>
                 </div>
 
                 {% for capsule in public_capsules %}

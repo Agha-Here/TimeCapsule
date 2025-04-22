@@ -2,8 +2,7 @@
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-}
+  box-sizing: border-box;}
 
 /* Base Styles */
 body {
@@ -55,7 +54,7 @@ body {
 }
 
 .subtitle {
-  font-size: clamp(1rem, 4vw, 1.5rem);
+  font-size: clamp(1.12rem, 4vw, 1.5rem);
   color: #a8a8a8;
   margin-bottom: 2rem;
 }
@@ -65,8 +64,8 @@ body {
   background: linear-gradient(90deg, #00d2ff, #3a7bd5);
   color: #fff;
   border: none;
-  border-radius: 25px;
-  padding: 1rem 2.5rem;
+  border-radius: 30px;
+  padding: 1.2rem 2rem;
   font-size: 1.2rem;
   margin-bottom: 3rem;
   cursor: pointer;
@@ -256,8 +255,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  flex-shrink: 0;column;
-
+  flex-shrink: 0;
 }
 
 .capsule-anonymous {
@@ -747,7 +745,6 @@ input[type="file"][disabled] {
   .modal-message {
     font-size: 0.9rem; /* Smaller text, web-standard */
   }
-}
 
 /* Small Height Screens */
 @media (max-height: 700px) {
@@ -955,7 +952,7 @@ input[type="text"]:focus {
 .search-container {
   margin: 20px auto;
   max-width: 600px;
-  padding: 0 20px;
+  padding: 1rem 0;
 }
 
 #capsule-search {
@@ -1288,4 +1285,94 @@ input[type="text"]:focus {
   padding: 1rem;
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Add to your existing CSS */
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-container {
+  flex: 1;
+  margin: 0;
+}
+
+.sort-container {
+  position: relative;
+  min-width: 160px;
+}
+
+.sort-select {
+  width: 100%;
+  padding: 12px 20px;
+  border: 2px solid #3a7bd5;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.sort-container:after {
+  content: '\f0d7';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #00d2ff;
+  pointer-events: none;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #00d2ff;
+  box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+}
+
+.sort-select option {
+  background: rgba(15, 52, 96, 0.95);
+  color: #fff;
+  padding: 10px;
+}
+
+/* Mobile sort styles */
+@media (max-width: 768px) {
+    .filter-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .search-container {
+        flex: 1;
+    }
+
+    .sort-container {
+        width: 45px;
+        min-width: 45px;
+    }
+
+    .sort-select {
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        border-radius: 50%;
+        background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+        border: none;
+        color: #fff;
+        font-size: 0;
+        cursor: pointer;
+        text-align: center;
+        -webkit-appearance: none;
+        appearance: none;
+    }
 }
