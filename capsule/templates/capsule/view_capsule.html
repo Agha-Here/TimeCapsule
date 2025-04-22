@@ -39,8 +39,15 @@
                         <span class="unlock-date">  {{ capsule.unlock_at }}</span>
                     </div>
                 {% else %}
-                    <p class="modal-message">{{ capsule.msg }}</p>
-                    <div class="modal-actions">
+                    <p class="modal-message" style="max-height: 270px;">{{ capsule.msg }}</p>
+                    {% if capsule.has_attachment %}
+                    <div class="modal-media">
+                        <button class="view-media-btn" data-url="{{ capsule.upload_url }}">
+                            <i class="fas fa-eye"></i> View Attachment
+                        </button>
+                    </div>
+                    {% endif %}
+                    <div class="modal-actions" style= "margin-bottom: 0px;">
                         <div class="like-container">
                             <button class="like-button" 
                                     data-capsule-id="{{ capsule.id }}"
@@ -50,13 +57,6 @@
                             <span class="like-count">{{ capsule.likes }}</span>
                         </div>
                     
-                        {% if capsule.has_attachment %}
-                        <div class="modal-media">
-                            <button class="view-media-btn" data-url="{{ capsule.upload_url }}">
-                                <i class="fas fa-eye"></i> View Attachment
-                            </button>
-                        </div>
-                        {% endif %}
                     
                         <button class="share-btn">
                             <i class="fas fa-share-alt"></i> Share
@@ -66,7 +66,7 @@
             </div>
 
             <!-- Create Button -->
-            <div style="text-align: center; margin-top: 8px;">
+            <div style="text-align: center; margin-top: 0;">
                 <button class="cta-button" onclick="window.location.href='/create/'" 
                     style="background: linear-gradient(90deg, #00d2ff, #3a7bd5); 
                            border: none; 
@@ -137,7 +137,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize like button
+            // Initialize like button with optimistic UI update
             const likeBtn = document.querySelector('.like-button');
             if (likeBtn) {
                 // Set initial state
@@ -145,19 +145,25 @@
                     likeBtn.classList.add('liked');
                 }
                 
-                // Add click handler with optimistic update
-                likeBtn.addEventListener('click', (e) => {
+                // Remove any existing event listeners
+                likeBtn.replaceWith(likeBtn.cloneNode(true));
+                
+                // Get the fresh button reference
+                const freshLikeBtn = document.querySelector('.like-button');
+                
+                // Add single click handler with optimistic update
+                freshLikeBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    const capsuleId = likeBtn.dataset.capsuleId;
-                    const isCurrentlyLiked = likeBtn.classList.contains('liked');
+                    const capsuleId = this.dataset.capsuleId;
+                    const isCurrentlyLiked = this.classList.contains('liked');
                     
                     // Immediately update UI
-                    likeBtn.classList.toggle('liked');
-                    const countElement = likeBtn.closest('.like-container').querySelector('.like-count');
+                    this.classList.toggle('liked');
+                    const countElement = this.closest('.like-container').querySelector('.like-count');
                     let currentCount = parseInt(countElement.textContent);
                     countElement.textContent = isCurrentlyLiked ? currentCount - 1 : currentCount + 1;
                     
-                    // Then send request to server
+                    // Send request to server
                     fetch(`/like/${capsuleId}/`, {
                         method: 'POST',
                         headers: {
@@ -168,17 +174,17 @@
                     .then(data => {
                         if (!data.success) {
                             // Only revert if server request failed
-                            likeBtn.classList.toggle('liked');
+                            this.classList.toggle('liked');
                             countElement.textContent = currentCount;
                         }
                     })
                     .catch(() => {
                         // Revert on error
-                        likeBtn.classList.toggle('liked');
+                        this.classList.toggle('liked');
                         countElement.textContent = currentCount;
                     });
                 });
-            }        
+            }      
         
             // Initialize share button
             const shareBtn = document.querySelector('.share-btn');

@@ -475,7 +475,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .modal-unlock, .modal-created {
   color: #a8a8a8;
-  font-size: 0.7rem; /* Smaller dates */
+  font-size: 0.75rem; /* Smaller dates */
 }
 
 .modal-created {
@@ -491,7 +491,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 125px; /* Your fix */
+  max-width: auto; /* Your fix */
 }
 
 .modal-body {
@@ -696,11 +696,13 @@ input[type="file"][disabled] {
   .capsule-header, .modal-header {
     gap: 0.8rem;
 }
-.capsule-date, .capsule-created,
-.modal-unlock, .modal-created {
+.capsule-date, .capsule-created{
     font-size: 0.75rem; /* Slightly smaller text on mobile */
     text-align: right;
 }
+.modal-unlock, .modal-created {
+    font-size: 0.65rem; /* Smaller dates */
+    text-align: right;}
 
   .capsule-content {
     min-height: 70px;
@@ -1070,7 +1072,7 @@ input[type="text"]:focus {
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0rem;
 }
 .capsule-card .like-container {
   margin-right: 1rem; /* Add space between like button and view attachment */
