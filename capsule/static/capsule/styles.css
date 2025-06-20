@@ -406,7 +406,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   justify-content: center;
 }
 
-
 .capsule-modal.active {
   opacity: 1;
   display: flex;

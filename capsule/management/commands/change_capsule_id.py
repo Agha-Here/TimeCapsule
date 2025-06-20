@@ -40,3 +40,4 @@ class Command(BaseCommand):
 
 # # to change the ID of a capsule. For example, to change the ID of a capsule with ID 5 to 100, you would run the following command:  
 # # python manage.py change_capsule_id 5 100
+

@@ -78,3 +78,4 @@ def send_capsule_unlock_email(capsule):
     except Exception as e:
         print(f"Error sending unlock email: {str(e)}")
         raise
+

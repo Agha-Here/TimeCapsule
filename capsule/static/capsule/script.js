@@ -274,7 +274,7 @@ function handleCardClick(e) {
                 showMediaPreview(url); // Use showMediaPreview instead of window.open
             }
         });
-        
+
         modalMedia.appendChild(newButton);
     }
 

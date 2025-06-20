@@ -26,3 +26,4 @@ class Command(BaseCommand):
                 )
 
         self.stdout.write(self.style.SUCCESS('Finished sending unlock emails'))
+        

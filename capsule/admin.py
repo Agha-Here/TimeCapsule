@@ -42,3 +42,4 @@ class CapsuleAdmin(admin.ModelAdmin):
             # Remove the System Info fieldset which contains id
             return fieldsets[:-1]
         return fieldsets
+    

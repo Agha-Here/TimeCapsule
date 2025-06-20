@@ -27,5 +27,6 @@ class Command(BaseCommand):
                 self.style.ERROR(f'Error resetting sequence: {str(e)}')
             )
 
+
 # for resetting the IDs of capsules.
 # python manage.py reset_capsule_id

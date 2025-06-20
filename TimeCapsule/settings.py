@@ -32,7 +32,6 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['localhost','*','127.0.0.1', '.render.com', 'TimeCapsule.onrender.com']
 
-
 # Application definition
 
 INSTALLED_APPS = [
